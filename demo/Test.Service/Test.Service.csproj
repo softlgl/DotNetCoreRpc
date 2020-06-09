@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
+    <ProjectReference Include="..\Test.IService\Test.IService.csproj" />
+    <ProjectReference Include="..\Test.IDAL\Test.IDAL.csproj" />
+  </ItemGroup>
+</Project>
