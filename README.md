@@ -3,6 +3,13 @@
 #### 前言
 &nbsp;&nbsp;&nbsp;&nbsp;一直以来都想实现一个简单的RPC框架。.net core不断完善之后借助其自身的便利实现一个RPC框架。框架分Server端和Client端两部分。Client端可在Console或Web端等，能运行.net core的host上运行。Server端依赖Asp.Net Core,接下来介绍大致使用，代码不完成,具体使用方式可参阅Demo https://github.com/softlgl/DotNetCoreRpc/edit/master/demo
 
+#### 运行环境
+<ul>
+    <li>visual studio 2019</li>
+    <li>.net standard 2.1</li>
+    <li>asp.net core 3.1</li>
+</ul>
+
 #### Client端配置使用
 首先新建任意形式的.net core宿主，为了简单我使用的是Console程序,引入DotNetCoreRpc.Client包和DependencyInjection相关包
 ```
