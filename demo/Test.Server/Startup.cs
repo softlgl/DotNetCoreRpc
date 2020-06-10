@@ -37,6 +37,9 @@ namespace Test.Server
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDotNetCoreRpc();
+            app.Run(async(context) => {
+                await context.Response.WriteAsync("server start!");
+            });
         }
     }
 }

@@ -14,57 +14,50 @@ namespace DotNetCoreRpc.Server
 {
     public class DotNetCoreRpcMiddleware
     {
-        private readonly RequestDelegate _next;
         private readonly IDictionary<string,Type> _types;
         private readonly IEnumerable<Type> _filterTypes;
         private readonly ConcurrentDictionary<string, List<RpcFilterAttribute>> _methodFilters = new ConcurrentDictionary<string, List<RpcFilterAttribute>>();
 
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
-            _next = next;
             _types = rpcServerOptions.GetTypes();
             _filterTypes = rpcServerOptions.GetFilterTypes();
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (context.Request.Headers.ContainsKey("User-Agent")
-                && context.Request.Headers["User-Agent"]=="DotNetCoreRpc.Client")
+            var syncIOFeature = context.Features.Get<IHttpBodyControlFeature>();
+            if (syncIOFeature != null)
             {
-                var syncIOFeature = context.Features.Get<IHttpBodyControlFeature>();
-                if (syncIOFeature != null)
-                {
-                    syncIOFeature.AllowSynchronousIO = true;
-                }
-                var requestReader = new StreamReader(context.Request.Body);
-                var requestContent = requestReader.ReadToEnd();
-                ResponseModel responseModel = new ResponseModel
-                {
-                    Code = 500
-                };
-                if (string.IsNullOrEmpty(requestContent))
-                {
-                    responseModel.Message = "未读取到请求信息";
-                    await context.Response.WriteAsync(responseModel.ToJson());
-                    return;
-                }
-                RequestModel requestModel = requestContent.FromJson<RequestModel>();
-                if (requestModel == null)
-                {
-                    responseModel.Message = "读取请求数据失败";
-                    await context.Response.WriteAsync(responseModel.ToJson());
-                    return;
-                }
-                if (!_types.ContainsKey(requestModel.TypeFullName))
-                {
-                    responseModel.Message = $"{requestModel.TypeFullName}未注册";
-                    await context.Response.WriteAsync(responseModel.ToJson());
-                    return;
-                }
-                await HandleRequest(context, responseModel, requestModel);
+                syncIOFeature.AllowSynchronousIO = true;
+            }
+            var requestReader = new StreamReader(context.Request.Body);
+            var requestContent = requestReader.ReadToEnd();
+            ResponseModel responseModel = new ResponseModel
+            {
+                Code = 500
+            };
+            if (string.IsNullOrEmpty(requestContent))
+            {
+                responseModel.Message = "未读取到请求信息";
+                await context.Response.WriteAsync(responseModel.ToJson());
                 return;
             }
-            await _next(context);
+            RequestModel requestModel = requestContent.FromJson<RequestModel>();
+            if (requestModel == null)
+            {
+                responseModel.Message = "读取请求数据失败";
+                await context.Response.WriteAsync(responseModel.ToJson());
+                return;
+            }
+            if (!_types.ContainsKey(requestModel.TypeFullName))
+            {
+                responseModel.Message = $"{requestModel.TypeFullName}未注册";
+                await context.Response.WriteAsync(responseModel.ToJson());
+                return;
+            }
+            await HandleRequest(context, responseModel, requestModel);
+            return;
         }
 
         /// <summary>

@@ -20,6 +20,8 @@
     <ProjectReference Include="..\Test.Model\Test.Model.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-    <PackageReference Include="DotNetCoreRpc.Server" Version="1.0.0" />
+    <ProjectReference Include="..\..\src\DotNetCoreRpc.Server\DotNetCoreRpc.Server.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
 </Project>
