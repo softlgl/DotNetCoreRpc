@@ -65,6 +65,8 @@ public class Startup
             .AddSingleton(new ElasticSearchConfig { Address = "127.0.0.1:9200" })
             //注册DotNetCoreRpcServer
             .AddDotNetCoreRpcServer(options => {
+                //*确保以下添加的服务已经被注册到DI容器
+                
                 //添加作为服务的接口
                 //options.AddService<IPersonService>();
                 
