@@ -1,7 +1,7 @@
 # DotNetCoreRpc基于.NetCore的RPC框架
 
 #### 前言
-&nbsp;&nbsp;&nbsp;&nbsp;一直以来都想实现一个简单的RPC框架。.net core不断完善之后借助其自身的便利实现一个RPC框架。框架分Server端和Client端两部分。Client端可在Console或Web端等，能运行.net core的host上运行。Server端依赖Asp.Net Core。
+&nbsp;&nbsp;&nbsp;&nbsp;一直以来都想实现一个简单的RPC框架。.net core不断完善之后借助其自身的便利实现一个RPC框架。框架分Server端和Client端两部分。Client端可在Console或Web端等，能运行.net core的host上运行。Server端依赖Asp.Net Core,接下来介绍大致使用,也可以自己参阅[Demo]{ps://github.com/softlgl/DotNetCoreRpc/edit/master/demo}
 
 #### Client端配置使用
 首先新建任意形式的.net core宿主，为了简单我使用的是Console程序,引入DotNetCoreRpc.Client包和DependencyInjection相关包
@@ -46,4 +46,67 @@ class Program
             Console.ReadLine();
         }
     }
+```
+#### Server端配置使用
+
+新建一个最简单的Asp.net Core项目,我这里的Demo是新建的Asp.net Core的空项目,引入DotNetCoreRpc.Server包
+```
+<PackageReference Include="DotNetCoreRpc.Server" Version="1.0.0" />
+```
+然后添加注入和相关中间件
+```cs
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton<IPersonDal, PersonDal>()
+            .AddSingleton<IPersonService,PersonService>()
+            .AddSingleton(new RedisConfig { Address="127.0.0.1:6379",db=10 })
+            .AddSingleton(new ElasticSearchConfig { Address = "127.0.0.1:9200" })
+            //注册DotNetCoreRpcServer
+            .AddDotNetCoreRpcServer(options => {
+                //添加作为服务的接口
+                //options.AddService<IPersonService>();
+                
+                //或添加作为服务的接口以xxx为结尾的接口
+                //options.AddService("*Service");
+                
+                //或添加具体名称为xxx的接口
+                //options.AddService("IPersonService");
+                //或具体命名空间下的接口
+                options.AddNameSpace("Test.IService");
+                
+                //添加全局过滤器
+                options.AddFilter<CacheFilter>();
+             });
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        //添加中间件
+        app.UseDotNetCoreRpc();
+    }
+}
+```
+过滤器的使用方式,可添加到类上或者方法上或者全局注册,优先级 方法>类>全局注册，RpcFilterAttribute是基于管道模式执行的，可支持注册多个Filter，支持属性注入。
+```cs
+public class CacheFilter : RpcFilterAttribute
+{
+    private readonly ElasticSearchConfig _elasticSearchConfig;
+
+    //支持属性注入public private都可以
+    [FromServices]
+    private RedisConfig RedisConfig { get; set; }
+
+    public CacheFilter(ElasticSearchConfig elasticSearchConfig)
+    {
+        _elasticSearchConfig = elasticSearchConfig;
+    }
+    public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
+    {
+        Debug.WriteLine($"CacheFilter begin,Parameters={context.Parameters}");
+        await next(context);
+        Debug.WriteLine($"CacheFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+    }
+ }
 ```
