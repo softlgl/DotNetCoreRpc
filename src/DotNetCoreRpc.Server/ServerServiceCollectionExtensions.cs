@@ -7,7 +7,7 @@ namespace DotNetCoreRpc.Server
     {
         public static IServiceCollection AddDotNetCoreRpcServer(this IServiceCollection services,Action<RpcServerOptions> options)
         {
-            RpcServerOptions rpcServerOptions = new RpcServerOptions(services);
+            RpcServerOptions rpcServerOptions = new RpcServerOptions();
             options.Invoke(rpcServerOptions);
             services.AddSingleton(rpcServerOptions);
             return services;

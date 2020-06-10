@@ -11,5 +11,10 @@
     <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
     <ProjectReference Include="..\Test.IService\Test.IService.csproj" />
     <ProjectReference Include="..\Test.IDAL\Test.IDAL.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCoreRpc.Core\DotNetCoreRpc.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Filters\" />
+    <Folder Include="Configs\" />
   </ItemGroup>
 </Project>

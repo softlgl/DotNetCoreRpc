@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,10 +16,13 @@ namespace DotNetCoreRpc.Server
     {
         private readonly RequestDelegate _next;
         private readonly IDictionary<string,Type> _types;
+        private readonly IEnumerable<Type> _filterTypes;
+        private readonly ConcurrentDictionary<string, List<RpcFilterAttribute>> _methodFilters = new ConcurrentDictionary<string, List<RpcFilterAttribute>>();
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
             _next = next;
             _types = rpcServerOptions.GetTypes();
+            _filterTypes = rpcServerOptions.GetFilterTypes();
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -108,7 +112,7 @@ namespace DotNetCoreRpc.Server
                 responseModel.Code = 200;
                 await context.Response.WriteAsync(responseModel.ToJson());
             });
-            List<RpcFilterAttribute> interceptorAttributes = GetFilterAttributes(method);
+            List<RpcFilterAttribute> interceptorAttributes = GetFilterAttributes(context, method);
             if (interceptorAttributes.Any())
             {
                 foreach (var item in interceptorAttributes)
@@ -147,16 +151,23 @@ namespace DotNetCoreRpc.Server
         /// 获取Attribute
         /// </summary>
         /// <returns></returns>
-        private List<RpcFilterAttribute> GetFilterAttributes(MethodInfo method)
+        private List<RpcFilterAttribute> GetFilterAttributes(HttpContext context,MethodInfo method)
         {
-            var classInterceptorAttributes = method.DeclaringType.GetCustomAttributes(true)
-                .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
-                .Cast<RpcFilterAttribute>().ToList();
-            var methondInterceptorAttributes = method.GetCustomAttributes(true)
-                .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
-                .Cast<RpcFilterAttribute>();
-            classInterceptorAttributes.AddRange(methondInterceptorAttributes);
-            return classInterceptorAttributes;
+            var methondInterceptorAttributes = _methodFilters.GetOrAdd($"{method.DeclaringType.FullName}#{method.Name}",
+                key=>{
+                    var methondAttributes = method.GetCustomAttributes(true)
+                                   .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
+                                   .Cast<RpcFilterAttribute>().ToList();
+                    var classAttributes = method.DeclaringType.GetCustomAttributes(true)
+                        .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
+                        .Cast<RpcFilterAttribute>();
+                    methondAttributes.AddRange(classAttributes);
+                    var glableInterceptorAttribute = RpcFilterUtils.GetInstances(context.RequestServices, _filterTypes);
+                    methondAttributes.AddRange(glableInterceptorAttribute);
+                    return methondAttributes;
+                });
+            RpcFilterUtils.PropertiesInject(context.RequestServices, methondInterceptorAttributes);
+            return methondInterceptorAttributes;
         }
     }
 }

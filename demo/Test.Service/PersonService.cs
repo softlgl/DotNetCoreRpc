@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Test.IDAL;
 using Test.IService;
 using Test.Model;
+using Test.Service.Filters;
 
 namespace Test.Service
 {
@@ -24,6 +25,7 @@ namespace Test.Service
             _personDal.Delete(id);
         }
 
+        [LoggerFilter]
         public PersonModel Get(int id)
         {
             return _personDal.Get(id);
