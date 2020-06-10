@@ -17,7 +17,9 @@ class Program
     static void Main(string[] args)
     {
         IServiceCollection services = new ServiceCollection();
+        //注册DotNetCoreRpcClient
         services.AddDotNetCoreRpcClient()
+        //通信基于HttpClientFactory,自行注册即可
         .AddHttpClient("TestServer", client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
 
         IServiceProvider serviceProvider = services.BuildServiceProvider();
