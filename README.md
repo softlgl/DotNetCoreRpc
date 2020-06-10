@@ -17,9 +17,9 @@ class Program
     static void Main(string[] args)
     {
         IServiceCollection services = new ServiceCollection();
-        //注册DotNetCoreRpcClient
+        //*注册DotNetCoreRpcClient
         services.AddDotNetCoreRpcClient()
-        //通信基于HttpClientFactory,自行注册即可
+        //*通信基于HttpClientFactory,自行注册即可
         .AddHttpClient("TestServer", client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
 
         IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -65,7 +65,7 @@ public class Startup
             .AddSingleton<IPersonService,PersonService>()
             .AddSingleton(new RedisConfig { Address="127.0.0.1:6379",db=10 })
             .AddSingleton(new ElasticSearchConfig { Address = "127.0.0.1:9200" })
-            //注册DotNetCoreRpcServer
+            //*注册DotNetCoreRpcServer
             .AddDotNetCoreRpcServer(options => {
                 //*确保以下添加的服务已经被注册到DI容器
                 
