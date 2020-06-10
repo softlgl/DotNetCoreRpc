@@ -8,9 +8,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Test.IService\Test.IService.csproj" />
     <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
-    <ProjectReference Include="..\..\src\DotNetCoreRpc.Client\DotNetCoreRpc.Client.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DotNetCoreRpc.Client" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
   </ItemGroup>

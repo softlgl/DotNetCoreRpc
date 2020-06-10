@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Authors>softlgl</Authors>
+    <Copyright>softlgl</Copyright>
+    <Owners>softlgl</Owners>
+    <PackageProjectUrl>https://github.com/softlgl/DotNetCoreRpc</PackageProjectUrl>
+    <Description>DotNetCoreRpc客户端库</Description>
   </PropertyGroup>
 
   <ItemGroup>

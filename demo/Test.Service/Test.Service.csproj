@@ -14,6 +14,9 @@
     <ProjectReference Include="..\..\src\DotNetCoreRpc.Core\DotNetCoreRpc.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DotNetCoreRpc.Core" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Filters\" />
     <Folder Include="Configs\" />
   </ItemGroup>
