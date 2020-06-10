@@ -18,6 +18,7 @@ namespace DotNetCoreRpc.Server
         private readonly IDictionary<string,Type> _types;
         private readonly IEnumerable<Type> _filterTypes;
         private readonly ConcurrentDictionary<string, List<RpcFilterAttribute>> _methodFilters = new ConcurrentDictionary<string, List<RpcFilterAttribute>>();
+
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
             _next = next;

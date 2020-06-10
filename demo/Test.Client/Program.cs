@@ -17,6 +17,7 @@ namespace Test.Client
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
             RpcClient rpcClient = serviceProvider.GetRequiredService<RpcClient>();
+
             IPersonService personService = rpcClient.CreateClient<IPersonService>("TestServer");
             PersonModel person = new PersonModel
             {

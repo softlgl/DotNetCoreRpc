@@ -10,6 +10,12 @@ namespace DotNetCoreRpc.Server
     {
         private readonly IDictionary<string, Type> _types = new Dictionary<string, Type>();
         private readonly IList<Type> _filterTypes = new List<Type>();
+        private readonly IServiceCollection _services;
+
+        public RpcServerOptions(IServiceCollection services)
+        {
+            _services = services;
+        }
 
         public RpcServerOptions AddFilter<RpcFilterAttribute>()
         {
@@ -27,11 +33,31 @@ namespace DotNetCoreRpc.Server
 
         public RpcServerOptions AddService(string serviceName)
         {
+            foreach (var service in _services)
+            {
+                if (serviceName.StartsWith("*")
+                    && service.ServiceType.Name.EndsWith(serviceName.Substring(1)))
+                {
+                    _types.TryAdd(service.ServiceType.FullName, service.ServiceType);
+                    continue;
+                }
+                if (service.ServiceType.Name == serviceName)
+                {
+                    _types.TryAdd(service.ServiceType.FullName, service.ServiceType);
+                }
+            }
             return this;
         }
 
         public RpcServerOptions AddNameSpace(string nameSpace)
         {
+            foreach (var service in _services)
+            {
+                if (service.ServiceType.Namespace == nameSpace)
+                {
+                    _types.TryAdd(service.ServiceType.FullName, service.ServiceType);
+                }
+            }
             return this;
         }
 
