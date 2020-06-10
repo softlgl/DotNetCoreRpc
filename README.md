@@ -23,6 +23,7 @@ class Program
         .AddHttpClient("TestServer", client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
 
         IServiceProvider serviceProvider = services.BuildServiceProvider();
+        //*RpcClient使用这个类创建具体服务代理
         RpcClient rpcClient = serviceProvider.GetRequiredService<RpcClient>();
 
         //IPersonService是我引入的服务包interface，需要提供ServiceName,即AddHttpClient的名称
