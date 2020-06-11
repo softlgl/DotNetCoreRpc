@@ -16,6 +16,7 @@ namespace Test.Service
             _personDal = personDal;
         }
 
+        [LoggerFilter]
         public bool Add(PersonModel person)
         {
             return _personDal.Add(person);

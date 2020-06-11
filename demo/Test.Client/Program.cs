@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
+using BenchmarkDotNet.Running;
 using DotNetCoreRpc.Client;
 using DotNetCoreRpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Test.IService;
 using Test.Model;
+using System.Threading.Tasks;
 
 namespace Test.Client
 {
@@ -17,15 +20,73 @@ namespace Test.Client
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
             RpcClient rpcClient = serviceProvider.GetRequiredService<RpcClient>();
-
             IPersonService personService = rpcClient.CreateClient<IPersonService>("TestServer");
+
+            int maxCount = 10000;
+
+            //Stopwatch stopwatch = new Stopwatch();
+            //Console.WriteLine($"Add开始执行");
+            //stopwatch.Start();
+            //for (int i = 0; i < maxCount; i++)
+            //{
+            //    PersonModel person = new PersonModel
+            //    {
+            //        Id = ++i,
+            //        IdCardNo = 5555555,
+            //        BirthDay = DateTime.Now,
+            //        HasMoney = false
+            //    };
+            //    person.Name = "softlgl" + person.Id;
+            //    bool add = personService.Add(person);
+            //}
+            //stopwatch.Stop();
+            //Console.WriteLine($"Add执行完成,总用时:{stopwatch.ElapsedMilliseconds}ms");
+
+            //stopwatch = new Stopwatch();
+            //maxCount = 10000;
+            //Console.WriteLine($"Get开始执行");
+            //stopwatch.Start();
+            //for (int i = 0; i < maxCount; i++)
+            //{
+            //    personService.Get(++i);
+            //}
+            //stopwatch.Stop();
+            //Console.WriteLine($"Get执行完成,总用时:{stopwatch.ElapsedMilliseconds}ms");
+
+            //Stopwatch stopwatch = new Stopwatch();
+            //Console.WriteLine($"Add开始执行");
+            //stopwatch.Start();
+            //Parallel.For(0,maxCount,i=> {
+            //    PersonModel person = new PersonModel
+            //    {
+            //        Id = ++i,
+            //        IdCardNo = 5555555,
+            //        BirthDay = DateTime.Now,
+            //        HasMoney = false
+            //    };
+            //    person.Name = "softlgl" + person.Id;
+            //    bool add = personService.Add(person);
+            //});
+            //stopwatch.Stop();
+            //Console.WriteLine($"Add执行完成,总用时:{stopwatch.ElapsedMilliseconds}ms");
+
+            //stopwatch = new Stopwatch();
+            //maxCount = 10000;
+            //Console.WriteLine($"Get开始执行");
+            //stopwatch.Start();
+            //Parallel.For(0, maxCount,i => {
+            //    personService.Get(++i);
+            //});
+            //stopwatch.Stop();
+            //Console.WriteLine($"Get执行完成,总用时:{stopwatch.ElapsedMilliseconds}ms");
+
             PersonModel person = new PersonModel
             {
                 Id = 1,
-                Name="softlgl",
+                Name = "softlgl",
                 IdCardNo = 5555555,
                 BirthDay = DateTime.Now,
-                HasMoney=false
+                HasMoney = false
             };
             bool add = personService.Add(person);
             Console.WriteLine($"添加Person:{add}");
@@ -35,6 +96,8 @@ namespace Test.Client
             Console.WriteLine($"获取Persons,id=1,persons=[{persons.ToJson()}]");
             personService.Delete(1);
             Console.WriteLine($"删除Person,id=1完成");
+
+            //BenchmarkRunner.Run<RpcClientBenchTest>();
 
             Console.ReadLine();
         }

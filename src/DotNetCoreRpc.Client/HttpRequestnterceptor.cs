@@ -26,9 +26,7 @@ namespace DotNetCoreRpc.Client
             };
             HttpContent httpContent = new StringContent(requestModel.ToJson());
             httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _httpClient.DefaultRequestHeaders.UserAgent.Clear();
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("DotNetCoreRpc.Client");
-            var responseMessage = _httpClient.PostAsync("/DotNetCoreRpc/Server", httpContent).GetAwaiter().GetResult();
+            var responseMessage = _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent).GetAwaiter().GetResult();
             if (responseMessage.StatusCode == HttpStatusCode.OK)
             {
                 string result = responseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
