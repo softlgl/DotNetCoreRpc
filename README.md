@@ -13,7 +13,7 @@
 #### Client端配置使用
 首先新建任意形式的.net core宿主，为了简单我使用的是Console程序,引入DotNetCoreRpc.Client包和DependencyInjection相关包
 ```
-<PackageReference Include="DotNetCoreRpc.Client" Version="1.0.0" />
+<PackageReference Include="DotNetCoreRpc.Client" Version="1.0.1" />
 <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
 <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
 ```
@@ -61,7 +61,7 @@ class Program
 
 新建一个最简单的Asp.net Core项目,我这里的Demo是新建的Asp.net Core的空项目,引入DotNetCoreRpc.Server包
 ```
-<PackageReference Include="DotNetCoreRpc.Server" Version="1.0.0" />
+<PackageReference Include="DotNetCoreRpc.Server" Version="1.0.1" />
 ```
 然后添加注入和相关中间件
 ```cs
