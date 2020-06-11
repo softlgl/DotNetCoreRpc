@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,7 @@ namespace DotNetCoreRpc.Core
 {
     public static class RpcFilterUtils
     {
+        private static readonly ConcurrentDictionary<string, IEnumerable<PropertyInfo>> _filterFromServices = new ConcurrentDictionary<string, IEnumerable<PropertyInfo>>();
         public static RpcFilterAttribute GetInstance(IServiceProvider serviceProvider,Type filterType)
         {
             return ActivatorUtilities.CreateInstance(serviceProvider, filterType) as RpcFilterAttribute;
@@ -24,10 +26,7 @@ namespace DotNetCoreRpc.Core
 
         public static void PropertieInject(IServiceProvider serviceProvider, RpcFilterAttribute rpcFilterAttribute)
         {
-            var properties = rpcFilterAttribute.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(i=>i.GetCustomAttribute<FromServicesAttribute>()!=null);
-            
+            var properties = _filterFromServices.GetOrAdd($"{rpcFilterAttribute.GetType().FullName}", key => rpcFilterAttribute.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(i => i.GetCustomAttribute<FromServicesAttribute>() != null));
             if (properties.Any())
             {
                 foreach (var propertyInfo in properties)
