@@ -10,6 +10,10 @@ namespace DotNetCoreRpc.Core.RpcBuilder
 
         public object[] Parameters { get; set; }
 
+        public Type TargetType { get; set; }
+
+        public MethodInfo Method { get; set; }
+
         public HttpContext HttpContext { get; set; }
     }
 }

@@ -12,11 +12,11 @@ namespace Test.DAL
 
         public bool Add(PersonModel person)
         {
-            //if (persons.Any(i => i.Id == person.Id))
-            //{
-            //    return false;
-            //}
-            //persons.Add(person);
+            if (persons.Any(i => i.Id == person.Id))
+            {
+                return false;
+            }
+            persons.Add(person);
             return true;
         }
 
@@ -31,16 +31,7 @@ namespace Test.DAL
 
         public PersonModel Get(int id)
         {
-            //return persons.FirstOrDefault(i => i.Id == id);
-            PersonModel person = new PersonModel
-            {
-                Id = id,
-                IdCardNo = 5555555,
-                BirthDay = DateTime.Now,
-                HasMoney = false
-            };
-            person.Name = "softlgl" + person.Id;
-            return person;
+            return persons.FirstOrDefault(i => i.Id == id);
         }
 
         public List<PersonModel> GetPersons()

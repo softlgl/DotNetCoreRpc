@@ -68,7 +68,8 @@ namespace DotNetCoreRpc.Server
         {
             Type serviceType = _types[requestModel.TypeFullName];
             var instance = context.RequestServices.GetService(serviceType);
-            var method = instance.GetType().GetMethod(requestModel.MethodName);
+            var instanceType = instance.GetType();
+            var method = instanceType.GetMethod(requestModel.MethodName);
             var methodParamters = method.GetParameters();
             var paramters = requestModel.Paramters;
             for (int i = 0; i < paramters.Length; i++)
@@ -81,8 +82,10 @@ namespace DotNetCoreRpc.Server
             AspectPiplineBuilder aspectPipline = CreatPipleline(context, responseModel, method);
             RpcContext aspectContext = new RpcContext
             {
-                Parameters = requestModel.Paramters,
+                Parameters = paramters,
                 HttpContext = context,
+                TargetType = instanceType,
+                Method = method
             };
             RpcRequestDelegate rpcRequestDelegate = aspectPipline.Build(PiplineEndPoint(requestModel, instance, aspectContext));
             await rpcRequestDelegate(aspectContext);
