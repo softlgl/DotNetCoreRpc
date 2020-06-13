@@ -14,8 +14,6 @@
 首先新建任意形式的.net core宿主，为了简单我使用的是Console程序,引入DotNetCoreRpc.Client包和DependencyInjection相关包
 ```
 <PackageReference Include="DotNetCoreRpc.Client" Version="1.0.2" />
-<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
-<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
 ```
 引入自己的服务接口包我这里是Test.IService,只需要引入interface层即可,写入如下测试代码,具体代码可参阅demo，由于DotNetCoreRpc通信是基于HttpClientFactory的，所以需要注册HttpClientFactory
 ```cs
