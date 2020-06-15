@@ -79,7 +79,6 @@ namespace DotNetCoreRpc.Server
                     paramters[i] = paramters[i].ToJson().FromJson(methodParamters[i].ParameterType);
                 }
             }
-            AspectPiplineBuilder aspectPipline = CreatPipleline(context, responseModel, method);
             RpcContext aspectContext = new RpcContext
             {
                 Parameters = paramters,
@@ -87,7 +86,8 @@ namespace DotNetCoreRpc.Server
                 TargetType = instanceType,
                 Method = method
             };
-            RpcRequestDelegate rpcRequestDelegate = aspectPipline.Build(PiplineEndPoint(requestModel, instance, aspectContext));
+            AspectPiplineBuilder aspectPipline = CreatPipleline(aspectContext);
+            RpcRequestDelegate rpcRequestDelegate = aspectPipline.Build(PiplineEndPoint(instance, aspectContext));
             await rpcRequestDelegate(aspectContext);
         }
 
@@ -95,21 +95,22 @@ namespace DotNetCoreRpc.Server
         /// 创建执行管道
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="responseModel"></param>
-        /// <param name="method"></param>
         /// <returns></returns>
-        private AspectPiplineBuilder CreatPipleline(HttpContext context, ResponseModel responseModel, MethodInfo method)
+        private AspectPiplineBuilder CreatPipleline(RpcContext aspectContext)
         {
             AspectPiplineBuilder aspectPipline = new AspectPiplineBuilder();
             //第一个中间件构建包装数据
             aspectPipline.Use(async (rpcContext, next) =>
             {
                 await next(rpcContext);
-                responseModel.Data = rpcContext.ReturnValue;
-                responseModel.Code = 200;
-                await context.Response.WriteAsync(responseModel.ToJson());
+                ResponseModel responseModel = new ResponseModel
+                {
+                    Data = rpcContext.ReturnValue,
+                    Code = 200
+                };
+                await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
-            List<RpcFilterAttribute> interceptorAttributes = GetFilterAttributes(context, method);
+            List<RpcFilterAttribute> interceptorAttributes = GetFilterAttributes(aspectContext);
             if (interceptorAttributes.Any())
             {
                 foreach (var item in interceptorAttributes)
@@ -124,11 +125,11 @@ namespace DotNetCoreRpc.Server
         /// 管道终结点
         /// </summary>
         /// <returns></returns>
-        private static RpcRequestDelegate PiplineEndPoint(RequestModel requestModel, object instance, RpcContext aspectContext)
+        private static RpcRequestDelegate PiplineEndPoint(object instance, RpcContext aspectContext)
         {
             return rpcContext =>
             {
-                var returnValue = instance.GetType().GetMethod(requestModel.MethodName).Invoke(instance, requestModel.Paramters);
+                var returnValue = aspectContext.Method.Invoke(instance, aspectContext.Parameters);
                 if (returnValue != null)
                 {
                     var returnValueType = returnValue.GetType();
@@ -148,22 +149,23 @@ namespace DotNetCoreRpc.Server
         /// 获取Attribute
         /// </summary>
         /// <returns></returns>
-        private List<RpcFilterAttribute> GetFilterAttributes(HttpContext context,MethodInfo method)
+        private List<RpcFilterAttribute> GetFilterAttributes(RpcContext aspectContext)
         {
-            var methondInterceptorAttributes = _methodFilters.GetOrAdd($"{method.DeclaringType.FullName}#{method.Name}",
+            var methondInfo = aspectContext.Method;
+            var methondInterceptorAttributes = _methodFilters.GetOrAdd($"{methondInfo.DeclaringType.FullName}#{methondInfo.Name}",
                 key=>{
-                    var methondAttributes = method.GetCustomAttributes(true)
+                    var methondAttributes = methondInfo.GetCustomAttributes(true)
                                    .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
                                    .Cast<RpcFilterAttribute>().ToList();
-                    var classAttributes = method.DeclaringType.GetCustomAttributes(true)
+                    var classAttributes = methondInfo.DeclaringType.GetCustomAttributes(true)
                         .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
                         .Cast<RpcFilterAttribute>();
                     methondAttributes.AddRange(classAttributes);
-                    var glableInterceptorAttribute = RpcFilterUtils.GetInstances(context.RequestServices, _filterTypes);
+                    var glableInterceptorAttribute = RpcFilterUtils.GetInstances(aspectContext.HttpContext.RequestServices, _filterTypes);
                     methondAttributes.AddRange(glableInterceptorAttribute);
                     return methondAttributes;
                 });
-            RpcFilterUtils.PropertiesInject(context.RequestServices, methondInterceptorAttributes);
+            RpcFilterUtils.PropertiesInject(aspectContext.HttpContext.RequestServices, methondInterceptorAttributes);
             return methondInterceptorAttributes;
         }
     }

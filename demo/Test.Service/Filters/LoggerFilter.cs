@@ -17,9 +17,9 @@ namespace Test.Service.Filters
 
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
-            //Console.WriteLine($"LoggerFilter begin,Parameters={context.Parameters[0].ToJson()}");
+            Console.WriteLine($"LoggerFilter begin,Parameters={context.Parameters[0].ToJson()}");
             await next(context);
-            //Console.WriteLine($"LoggerFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+            Console.WriteLine($"LoggerFilter end,ReturnValue={context.ReturnValue.ToJson()}");
         }
     }
 }

@@ -7,6 +7,7 @@
     <Owners>softlgl</Owners>
     <PackageProjectUrl>https://github.com/softlgl/DotNetCoreRpc</PackageProjectUrl>
     <Description>DotNetCoreRpc基础库</Description>
+    <PackageVersion>1.0.2</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
