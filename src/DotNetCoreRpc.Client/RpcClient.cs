@@ -17,11 +17,12 @@ namespace DotNetCoreRpc.Client
             _httpClientFactory = httpClientFactory;
         }
 
-        public T CreateClient<T>(string serviceName) where T:class
+        public T CreateClient<T>(string serviceName) where T : class
         {
-            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClientFactory.CreateClient(serviceName));
-            return _services.GetOrAdd(typeof(T).FullName,
-                _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor)) as T;
+            return _services.GetOrAdd(typeof(T).FullName, key => {
+                HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClientFactory.CreateClient(serviceName));
+                return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
+            }) as T;
         }
 
     }
