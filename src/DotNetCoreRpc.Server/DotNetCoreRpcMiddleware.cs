@@ -26,13 +26,11 @@ namespace DotNetCoreRpc.Server
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var syncIOFeature = context.Features.Get<IHttpBodyControlFeature>();
-            if (syncIOFeature != null)
-            {
-                syncIOFeature.AllowSynchronousIO = true;
-            }
+            context.Request.EnableBuffering();
+            context.Request.Body.Seek(0, SeekOrigin.Begin);
             var requestReader = new StreamReader(context.Request.Body);
-            var requestContent = requestReader.ReadToEnd();
+            var requestContent = await requestReader.ReadToEndAsync();
+            context.Request.Body.Seek(0, SeekOrigin.Begin);
             ResponseModel responseModel = new ResponseModel
             {
                 Code = 500
