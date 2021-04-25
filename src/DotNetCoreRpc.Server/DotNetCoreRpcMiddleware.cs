@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
@@ -54,7 +55,7 @@ namespace DotNetCoreRpc.Server
                 await context.Response.WriteAsync(responseModel.ToJson());
                 return;
             }
-            await HandleRequest(context, responseModel, requestModel);
+            await HandleRequest(context, requestModel);
             return;
         }
 
@@ -62,7 +63,7 @@ namespace DotNetCoreRpc.Server
         /// 处理请求
         /// </summary>
         /// <returns></returns>
-        private async Task HandleRequest(HttpContext context, ResponseModel responseModel, RequestModel requestModel)
+        private async Task HandleRequest(HttpContext context, RequestModel requestModel)
         {
             Type serviceType = _types[requestModel.TypeFullName];
             var instance = context.RequestServices.GetService(serviceType);
