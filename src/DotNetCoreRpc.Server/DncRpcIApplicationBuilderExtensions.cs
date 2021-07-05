@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 
 namespace DotNetCoreRpc.Server
 {
-    public static class DotNetCoreRpcIApplicationBuilderExtensions
+    public static class DncRpcIApplicationBuilderExtensions
     {
         public static IApplicationBuilder UseDotNetCoreRpc(this IApplicationBuilder applicationBuilder)
         {

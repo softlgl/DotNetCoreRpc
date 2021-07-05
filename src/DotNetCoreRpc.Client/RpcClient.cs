@@ -9,7 +9,6 @@ namespace DotNetCoreRpc.Client
     {
         private readonly ProxyGenerator _proxyGenerator;
         private readonly IHttpClientFactory _httpClientFactory;
-        private static ConcurrentDictionary<string, object> _services = new ConcurrentDictionary<string, object>();
 
         public RpcClient(ProxyGenerator proxyGenerator, IHttpClientFactory httpClientFactory)
         {
@@ -19,11 +18,8 @@ namespace DotNetCoreRpc.Client
 
         public T CreateClient<T>(string serviceName) where T : class
         {
-            return _services.GetOrAdd(typeof(T).FullName, key => {
-                HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClientFactory.CreateClient(serviceName));
-                return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
-            }) as T;
+            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClientFactory.CreateClient(serviceName));
+            return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
         }
-
     }
 }
