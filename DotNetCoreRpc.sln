@@ -1,29 +1,30 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{96A4B550-34BF-42E5-8616-9417AC211E06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCoreRpc.Client", "src\DotNetCoreRpc.Client\DotNetCoreRpc.Client.csproj", "{24C6EB77-6E2F-4CAD-BA1F-FF5020AF1817}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCoreRpc.Client", "src\DotNetCoreRpc.Client\DotNetCoreRpc.Client.csproj", "{24C6EB77-6E2F-4CAD-BA1F-FF5020AF1817}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{D2541A66-D747-491B-A2D5-449097B9E199}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCoreRpc.Core", "src\DotNetCoreRpc.Core\DotNetCoreRpc.Core.csproj", "{56E87951-234F-42DF-9000-FE8075E86E48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCoreRpc.Core", "src\DotNetCoreRpc.Core\DotNetCoreRpc.Core.csproj", "{56E87951-234F-42DF-9000-FE8075E86E48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCoreRpc.Server", "src\DotNetCoreRpc.Server\DotNetCoreRpc.Server.csproj", "{0955C355-CCDB-4423-B769-57B50481A037}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCoreRpc.Server", "src\DotNetCoreRpc.Server\DotNetCoreRpc.Server.csproj", "{0955C355-CCDB-4423-B769-57B50481A037}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.IDAL", "demo\Test.IDAL\Test.IDAL.csproj", "{B94943EB-4EED-450A-B602-8185135F1507}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.IDAL", "demo\Test.IDAL\Test.IDAL.csproj", "{B94943EB-4EED-450A-B602-8185135F1507}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DAL", "demo\Test.DAL\Test.DAL.csproj", "{1A48DCED-CBBB-4F3D-AA30-49C85CCF6A42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.DAL", "demo\Test.DAL\Test.DAL.csproj", "{1A48DCED-CBBB-4F3D-AA30-49C85CCF6A42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Model", "demo\Test.Model\Test.Model.csproj", "{44C5D95F-7F18-4EDA-9C50-4780AA07EC36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Model", "demo\Test.Model\Test.Model.csproj", "{44C5D95F-7F18-4EDA-9C50-4780AA07EC36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.IService", "demo\Test.IService\Test.IService.csproj", "{C0605A57-C2C6-48ED-ABB3-473FB89ADA71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.IService", "demo\Test.IService\Test.IService.csproj", "{C0605A57-C2C6-48ED-ABB3-473FB89ADA71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Service", "demo\Test.Service\Test.Service.csproj", "{077A1845-8E2D-4035-B2F9-3375A00AD6E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Service", "demo\Test.Service\Test.Service.csproj", "{077A1845-8E2D-4035-B2F9-3375A00AD6E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Server", "demo\Test.Server\Test.Server.csproj", "{02A7DC84-9707-48DF-B420-CD9F8CADDAEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Server", "demo\Test.Server\Test.Server.csproj", "{02A7DC84-9707-48DF-B420-CD9F8CADDAEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Client", "demo\Test.Client\Test.Client.csproj", "{69FA7DCE-C9F7-4EE0-87BA-F718E5DEEFC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Client", "demo\Test.Client\Test.Client.csproj", "{69FA7DCE-C9F7-4EE0-87BA-F718E5DEEFC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,6 +73,9 @@ Global
 		{69FA7DCE-C9F7-4EE0-87BA-F718E5DEEFC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69FA7DCE-C9F7-4EE0-87BA-F718E5DEEFC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{24C6EB77-6E2F-4CAD-BA1F-FF5020AF1817} = {96A4B550-34BF-42E5-8616-9417AC211E06}
 		{56E87951-234F-42DF-9000-FE8075E86E48} = {96A4B550-34BF-42E5-8616-9417AC211E06}
@@ -83,5 +87,8 @@ Global
 		{077A1845-8E2D-4035-B2F9-3375A00AD6E7} = {D2541A66-D747-491B-A2D5-449097B9E199}
 		{02A7DC84-9707-48DF-B420-CD9F8CADDAEF} = {D2541A66-D747-491B-A2D5-449097B9E199}
 		{69FA7DCE-C9F7-4EE0-87BA-F718E5DEEFC8} = {D2541A66-D747-491B-A2D5-449097B9E199}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7F50863A-4194-4CF2-A0DE-D292D9D0B9B7}
 	EndGlobalSection
 EndGlobal
