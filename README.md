@@ -6,14 +6,15 @@
 #### 运行环境
 <ul>
     <li>visual studio 2019</li>
-    <li>.net standard 2.1</li>
+    <li>.netstandard2.1</li>
+    <li>.net5</li>
     <li>asp.net core 3.1</li>
 </ul>
 
 #### Client端配置使用
 首先新建任意形式的.net core宿主，为了简单我使用的是Console程序,引入DotNetCoreRpc.Client包和DependencyInjection相关包
 ```
-<PackageReference Include="DotNetCoreRpc.Client" Version="1.0.2" />
+<PackageReference Include="DotNetCoreRpc.Client" Version="1.0.3" />
 ```
 引入自己的服务接口包我这里是Test.IService,只需要引入interface层即可,写入如下测试代码,具体代码可参阅demo，由于DotNetCoreRpc通信是基于HttpClientFactory的，所以需要注册HttpClientFactory
 ```cs
@@ -59,7 +60,7 @@ class Program
 
 新建一个最简单的Asp.net Core项目,我这里的Demo是新建的Asp.net Core的空项目,引入DotNetCoreRpc.Server包
 ```
-<PackageReference Include="DotNetCoreRpc.Server" Version="1.0.2" />
+<PackageReference Include="DotNetCoreRpc.Server" Version="1.0.3" />
 ```
 然后添加注入和相关中间件
 ```cs
@@ -93,8 +94,14 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        //添加中间件
-        app.UseDotNetCoreRpc();
+        //通过中间件的方式引入
+        //app.UseDotNetCoreRpc();
+        app.UseRouting();
+        app.UseEndpoints(endpoint => {
+            endpoint.Map("/", async context=>await context.Response.WriteAsync("server start!"));
+            //通过endpoint的方式引入
+            endpoint.MapDotNetCoreRpc();
+        });
     }
 }
 ```
