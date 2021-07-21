@@ -7,20 +7,36 @@ using Microsoft.Extensions.DependencyInjection;
 using Test.IService;
 using Test.Model;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Nacos.V2.DependencyInjection;
 
 namespace Test.Client
 {
     class Program
     {
+        //TestServer服务名称
+        const string TestServerName = "TestServer";
+
         static void Main(string[] args)
         {
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            var configuration = builder.Build();
+
             IServiceCollection services = new ServiceCollection();
-            services.AddDotNetCoreRpcClient()
-            .AddHttpClient("TestServer", client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
+            services.AddLogging().AddDotNetCoreRpcClient()
+            //单机版Httpclient配置
+            //.AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/"); })
+            //基于Nacos注册中心
+            .AddNacosV2Naming(configuration)
+            .AddScoped<NacosDiscoveryDelegatingHandler>()
+            .AddHttpClient(TestServerName, client => {
+                client.BaseAddress = new Uri($"http://{TestServerName}");
+            }).AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
             RpcClient rpcClient = serviceProvider.GetRequiredService<RpcClient>();
-            IPersonService personService = rpcClient.CreateClient<IPersonService>("TestServer");
+            IPersonService personService = rpcClient.CreateClient<IPersonService>(TestServerName);
 
             int maxCount = 10000;
 

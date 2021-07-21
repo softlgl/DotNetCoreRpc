@@ -6,8 +6,10 @@ using DotNetCoreRpc.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Nacos.AspNetCore.V2;
 using Test.DAL;
 using Test.IDAL;
 using Test.IService;
@@ -19,6 +21,12 @@ namespace Test.Server
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+        public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IPersonDal, PersonDal>()
@@ -32,6 +40,7 @@ namespace Test.Server
                     options.AddNameSpace("Test.IService");
                     options.AddFilter<CacheFilter>();
                  });
+            services.AddNacosAspNet(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
