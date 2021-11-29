@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\demo\Test.DAL\Test.DAL.csproj" />
+    <ProjectReference Include="..\demo\Test.IDAL\Test.IDAL.csproj" />
+    <ProjectReference Include="..\demo\Test.IService\Test.IService.csproj" />
+    <ProjectReference Include="..\demo\Test.Model\Test.Model.csproj" />
+    <ProjectReference Include="..\demo\Test.Service\Test.Service.csproj" />
+    <ProjectReference Include="..\src\DotNetCoreRpc.Server\DotNetCoreRpc.Server.csproj" />
+  </ItemGroup>
+
+</Project>

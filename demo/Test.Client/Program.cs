@@ -26,13 +26,13 @@ namespace Test.Client
             IServiceCollection services = new ServiceCollection();
             services.AddLogging().AddDotNetCoreRpcClient()
             //单机版Httpclient配置
-            //.AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/"); })
+            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:5141/"); });
             //基于Nacos注册中心
-            .AddNacosV2Naming(configuration)
-            .AddScoped<NacosDiscoveryDelegatingHandler>()
-            .AddHttpClient(TestServerName, client => {
-                client.BaseAddress = new Uri($"http://{TestServerName}");
-            }).AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>();
+            //.AddNacosV2Naming(configuration)
+            //.AddScoped<NacosDiscoveryDelegatingHandler>()
+            //.AddHttpClient(TestServerName, client => {
+            //    client.BaseAddress = new Uri($"http://{TestServerName}");
+            //}).AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
             RpcClient rpcClient = serviceProvider.GetRequiredService<RpcClient>();
@@ -105,13 +105,25 @@ namespace Test.Client
                 HasMoney = false
             };
             bool add = personService.Add(person);
-            Console.WriteLine($"添加Person:{add}");
+            Console.WriteLine($"添加Person1:{add}");
             person = personService.Get(1);
             Console.WriteLine($"获取Person,id=1,person=[{person.ToJson()}]");
+            person = new PersonModel
+            {
+                Id = 2,
+                Name = "yi念之间",
+                IdCardNo = 666888,
+                BirthDay = DateTime.Now,
+                HasMoney = false
+            };
+            add = personService.Add(person);
+            Console.WriteLine($"添加Person2:{add}");
             var persons = personService.GetPersons();
-            Console.WriteLine($"获取Persons,id=1,persons=[{persons.ToJson()}]");
+            Console.WriteLine($"获取Persons,persons=[{persons.ToJson()}]");
             personService.Delete(1);
             Console.WriteLine($"删除Person,id=1完成");
+            persons = personService.GetPersons();
+            Console.WriteLine($"最后获取Persons,persons=[{persons.ToJson()}]");
 
             //BenchmarkRunner.Run<RpcClientBenchTest>();
 
