@@ -98,6 +98,29 @@ public class Startup
     }
 }
 ```
+如果是ASP.NET Core 6的Minimal Api则使用以下方式
+```cs
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<IPersonDal, PersonDal>()
+               .AddSingleton<IPersonService, PersonService>()
+               .AddSingleton(new RedisConfig { Address = "127.0.0.1:6379", db = 10 })
+               .AddSingleton(new ElasticSearchConfig { Address = "127.0.0.1:9200" })
+               .AddDotNetCoreRpcServer(options => {
+                    //options.AddService<IPersonService>();
+                    //options.AddService("*Service");
+                    //options.AddService("IPersonService");
+                    options.AddNameSpace("Test.IService");
+                    options.AddFilter<CacheFilter>();
+               });
+
+var app = builder.Build();
+
+app.UseDotNetCoreRpc();
+app.MapGet("/", () => "Hello World!");
+
+app.Run();
+```
 过滤器的使用方式,可添加到类上或者方法上或者全局注册,优先级 方法>类>全局注册，RpcFilterAttribute是基于管道模式执行的，可支持注册多个Filter，支持属性注入。
 ```cs
 public class CacheFilter : RpcFilterAttribute
