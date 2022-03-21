@@ -42,7 +42,7 @@ namespace Test.Client
         }
 
         [Benchmark]
-        public void AddTest()
+        public async void AddTest()
         {
             for (int i = 0; i < maxCount; i++)
             {
@@ -54,7 +54,7 @@ namespace Test.Client
                     HasMoney = false
                 };
                 person.Name = "softlgl" + person.Id;
-                bool add = personService.Add(person);
+                bool add = await personService.Add(person);
             }
         }
     }
