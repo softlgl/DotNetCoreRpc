@@ -17,7 +17,7 @@ namespace Test.Client
         //TestServer服务名称
         const string TestServerName = "TestServer";
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
@@ -26,7 +26,7 @@ namespace Test.Client
             IServiceCollection services = new ServiceCollection();
             services.AddLogging().AddDotNetCoreRpcClient()
             //单机版Httpclient配置
-            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:5141/"); });
+            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
             //基于Nacos注册中心
             //.AddNacosV2Naming(configuration)
             //.AddScoped<NacosDiscoveryDelegatingHandler>()
@@ -104,7 +104,7 @@ namespace Test.Client
                 BirthDay = DateTime.Now,
                 HasMoney = false
             };
-            bool add = personService.Add(person);
+            bool add = await personService.Add(person);
             Console.WriteLine($"添加Person1:{add}");
             person = personService.Get(1);
             Console.WriteLine($"获取Person,id=1,person=[{person.ToJson()}]");
@@ -116,13 +116,15 @@ namespace Test.Client
                 BirthDay = DateTime.Now,
                 HasMoney = false
             };
-            add = personService.Add(person);
+            add = await personService.Add(person);
             Console.WriteLine($"添加Person2:{add}");
-            var persons = personService.GetPersons();
+            var persons = await personService.GetPersons();
             Console.WriteLine($"获取Persons,persons=[{persons.ToJson()}]");
+            await personService.Edit(1);
+            Console.WriteLine($"修改Person,id=1完成");
             personService.Delete(1);
             Console.WriteLine($"删除Person,id=1完成");
-            persons = personService.GetPersons();
+            persons = await personService.GetPersons();
             Console.WriteLine($"最后获取Persons,persons=[{persons.ToJson()}]");
 
             //BenchmarkRunner.Run<RpcClientBenchTest>();

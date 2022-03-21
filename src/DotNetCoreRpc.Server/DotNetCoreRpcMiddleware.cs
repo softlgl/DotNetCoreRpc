@@ -132,10 +132,15 @@ namespace DotNetCoreRpc.Server
                 if (returnValue != null)
                 {
                     var returnValueType = returnValue.GetType();
-                    if (typeof(Task).IsAssignableFrom(returnValueType))
+                    if (returnValueType.IsGenericType 
+                      && (typeof(Task).IsAssignableFrom(returnValueType) || returnValueType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
                     {
                         var resultProperty = returnValueType.GetProperty("Result");
                         aspectContext.ReturnValue = resultProperty.GetValue(returnValue);
+                        return Task.CompletedTask;
+                    }
+                    if (returnValueType == typeof(Task) || returnValueType== typeof(ValueTask))
+                    {
                         return Task.CompletedTask;
                     }
                     aspectContext.ReturnValue = returnValue;

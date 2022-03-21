@@ -17,14 +17,19 @@ namespace Test.Service
         }
 
         [LoggerFilter]
-        public bool Add(PersonModel person)
+        public ValueTask<bool> Add(PersonModel person)
         {
-            return _personDal.Add(person);
+            return new ValueTask<bool>(_personDal.Add(person));
         }
 
         public void Delete(int id)
         {
             _personDal.Delete(id);
+        }
+
+        public Task Edit(int id)
+        {
+            return Task.CompletedTask;
         }
 
         [LoggerFilter]
@@ -33,9 +38,9 @@ namespace Test.Service
             return _personDal.Get(id);
         }
 
-        public List<PersonModel> GetPersons()
+        public async Task<List<PersonModel>> GetPersons()
         {
-            return _personDal.GetPersons();
+            return await Task.FromResult(_personDal.GetPersons());
         }
     }
 }

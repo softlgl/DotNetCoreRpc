@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Test.DAL\Test.DAL.csproj" />
     <ProjectReference Include="..\Test.IService\Test.IService.csproj" />
     <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
     <ProjectReference Include="..\..\src\DotNetCoreRpc.Client\DotNetCoreRpc.Client.csproj" />
