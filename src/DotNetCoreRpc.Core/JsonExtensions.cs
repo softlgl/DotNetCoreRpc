@@ -1,5 +1,6 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace DotNetCoreRpc.Core
 {
@@ -7,17 +8,17 @@ namespace DotNetCoreRpc.Core
     {
         public static string ToJson<T>(this T data) where T:class,new()
         {
-            return JsonConvert.SerializeObject(data);
+            return JsonSerializer.Serialize(data, new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         }
 
         public static T FromJson<T>(this string json) where T : class, new()
         {
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         }
 
         public static object FromJson(this string json,Type type)
         {
-            return JsonConvert.DeserializeObject(json,type);
+            return JsonSerializer.Deserialize(json, type, new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         }
     }
 }
