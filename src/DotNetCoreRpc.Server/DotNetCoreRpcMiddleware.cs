@@ -128,7 +128,40 @@ namespace DotNetCoreRpc.Server
         {
             return rpcContext =>
             {
-                var returnValue = aspectContext.Method.Invoke(instance, aspectContext.Parameters);
+                var targetParameter = Expression.Parameter(typeof(object), "target");
+                var parametersParameter = Expression.Parameter(typeof(object?[]), "parameters");
+                var paramInfos = aspectContext.Method.GetParameters();
+                var parameters = new List<Expression>(paramInfos.Length);
+                for (int i = 0; i < paramInfos.Length; i++)
+                {
+                    var paramInfo = paramInfos[i];
+                    var valueObj = Expression.ArrayIndex(parametersParameter, Expression.Constant(i));
+                    var valueCast = Expression.Convert(valueObj, paramInfo.ParameterType);
+
+                    // valueCast is "(Ti) parameters[i]"
+                    parameters.Add(valueCast);
+                }
+                var instanceCast = Expression.Convert(targetParameter, aspectContext.TargetType.GetTypeInfo().AsType());
+                var methodCall = Expression.Call(instanceCast, aspectContext.Method, parameters);
+
+                Func<object, object?[]?, object?> func = null;
+                if (methodCall.Type == typeof(void))
+                {
+                    var lambda = Expression.Lambda<Action<object, object?[]?>>(methodCall, targetParameter, parametersParameter);
+                    func = (target, parameters) =>
+                    {
+                        lambda.Compile().Invoke(target, parameters);
+                        return null;
+                    };
+                }
+                else
+                {
+                    var castMethodCall = Expression.Convert(methodCall, typeof(object));
+                    var lambda = Expression.Lambda<Func<object, object?[]?, object?>>(castMethodCall, targetParameter, parametersParameter);
+                    func = lambda.Compile();
+                }
+                var returnValue = func.Invoke(instance, aspectContext.Parameters);
+                //var returnValue = aspectContext.Method.Invoke(instance, aspectContext.Parameters);
                 if (returnValue != null)
                 {
                     var returnValueType = returnValue.GetType();
