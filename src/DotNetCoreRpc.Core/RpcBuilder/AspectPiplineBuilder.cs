@@ -16,7 +16,7 @@ namespace DotNetCoreRpc.Core.RpcBuilder
 
         public AspectPiplineBuilder Use(Func<RpcContext, RpcRequestDelegate, Task> middleware)
         {
-            _components.Add(next => context => middleware(context,next));
+            _components.Add(next => context => middleware(context, next));
             return this;
         }
 

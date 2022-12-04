@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using DotNetCoreRpc.Core;
@@ -14,9 +11,6 @@ namespace DotNetCoreRpc.Client
 {
     public class HttpRequestInterceptor : IInterceptor
     {
-        private static readonly ConcurrentDictionary<Type, MethodInfo> _taskTypeCache = new ConcurrentDictionary<Type, MethodInfo>();
-        private static readonly ConcurrentDictionary<Type, Type> _valueTaskCache = new ConcurrentDictionary<Type, Type>();
-
         private readonly HttpClient _httpClient;
         public HttpRequestInterceptor(HttpClient httpClient)
         {
@@ -37,7 +31,7 @@ namespace DotNetCoreRpc.Client
             var responseMessage = _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent).GetAwaiter().GetResult();
             if (responseMessage.StatusCode == HttpStatusCode.OK)
             {
-                var methodReturnType = methodInfo.ReturnType;
+                var methodReturnType = methodInfo.ReturnType.GetTypeInfo();
                 string result = responseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 if (!string.IsNullOrEmpty(result))
                 {
@@ -48,28 +42,28 @@ namespace DotNetCoreRpc.Client
                     }
                     if (responseModel.Data != null)
                     {
-                        if (TaskUtils.IsAsyncMethod(methodInfo))
+                        if (!methodReturnType.IsAsync())
                         {
-                            if (methodReturnType.IsGenericType)
-                            {
-                                var returnValue = responseModel.Data.ToJson().FromJson(methodReturnType.GetGenericArguments()[0]);
-                                var resultType = invocation.Method.ReturnType.GetGenericArguments()[0];
-                                if (methodReturnType.GetGenericTypeDefinition() == typeof(Task<>))
-                                {
-                                    var mi = _taskTypeCache.GetOrAdd(resultType, type=> typeof(Task).GetMethod("FromResult")!.MakeGenericMethod(resultType));
-                                    invocation.ReturnValue = mi.Invoke(this, new[] { returnValue });
-                                }
-                                if (methodReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
-                                {
-                                    invocation.ReturnValue = Activator.CreateInstance(_valueTaskCache.GetOrAdd(resultType, type => typeof(ValueTask<>).MakeGenericType(resultType)), returnValue);
-                                }
-                                return;
-                            }
+                            invocation.ReturnValue = responseModel.Data.ToJson().FromJson(methodInfo.ReturnType);
+                            return;
                         }
-                        invocation.ReturnValue = responseModel.Data.ToJson().FromJson(methodInfo.ReturnType);
-                        return;
+
+                        var returnValue = responseModel.Data.ToJson().FromJson(methodReturnType.GetGenericArguments()[0]);
+                        var resultType = invocation.Method.ReturnType.GetGenericArguments()[0];
+                        if (methodReturnType.IsTaskWithResult())
+                        {
+                            invocation.ReturnValue = TaskUtils.TaskResultFunc(resultType).Invoke(returnValue);
+                            return;
+                        }
+
+                        if (methodReturnType.IsValueTaskWithResult())
+                        {
+                            invocation.ReturnValue = TaskUtils.ValueTaskResultFunc(resultType).Invoke(returnValue);   
+                            return;
+                        }    
                     }
-                    if (methodReturnType == typeof(Task) || methodReturnType == typeof(ValueTask))
+
+                    if (methodReturnType.IsTask() || methodReturnType.IsValueTask())
                     {
                         invocation.ReturnValue = Task.CompletedTask;
                         return;

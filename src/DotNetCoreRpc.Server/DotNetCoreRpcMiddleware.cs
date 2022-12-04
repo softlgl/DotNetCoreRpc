@@ -126,7 +126,7 @@ namespace DotNetCoreRpc.Server
         /// <returns></returns>
         private static RpcRequestDelegate PiplineEndPoint(object instance, RpcContext aspectContext)
         {
-            return rpcContext =>
+            return async rpcContext =>
             {
                 var targetParameter = Expression.Parameter(typeof(object), "target");
                 var parametersParameter = Expression.Parameter(typeof(object?[]), "parameters");
@@ -161,24 +161,30 @@ namespace DotNetCoreRpc.Server
                     func = lambda.Compile();
                 }
                 var returnValue = func.Invoke(instance, aspectContext.Parameters);
-                //var returnValue = aspectContext.Method.Invoke(instance, aspectContext.Parameters);
                 if (returnValue != null)
                 {
-                    var returnValueType = returnValue.GetType();
-                    if (returnValueType.IsGenericType 
-                      && (typeof(Task).IsAssignableFrom(returnValueType) || returnValueType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
+                    var returnValueType = returnValue.GetType().GetTypeInfo();
+                    if (returnValueType.IsAsync())
                     {
-                        var resultProperty = returnValueType.GetProperty("Result");
-                        aspectContext.ReturnValue = resultProperty.GetValue(returnValue);
-                        return Task.CompletedTask;
-                    }
-                    if (returnValueType == typeof(Task) || returnValueType== typeof(ValueTask))
-                    {
-                        return Task.CompletedTask;
+                        if (returnValueType.IsTaskWithResult())
+                        {
+                            aspectContext.ReturnValue = TaskUtils.CreateFuncToGetTaskResult(returnValueType).Invoke(returnValue);
+                            return;
+                        }
+                        if (returnValueType.IsValueTaskWithResult())
+                        {
+                            await TaskUtils.ValueTaskWithResultToTask(returnValue, returnValueType);
+                            aspectContext.ReturnValue = TaskUtils.CreateFuncToGetTaskResult(returnValueType).Invoke(returnValue);
+                            return;
+                        }
+                        if (returnValue is Task || returnValue is ValueTask)
+                        {
+                            return;
+                        }
                     }
                     aspectContext.ReturnValue = returnValue;
                 }
-                return Task.CompletedTask;
+                return;
             };
         }
 
