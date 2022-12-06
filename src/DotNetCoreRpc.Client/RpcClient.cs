@@ -18,7 +18,12 @@ namespace DotNetCoreRpc.Client
 
         public T CreateClient<T>(string serviceName) where T : class
         {
-            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClientFactory.CreateClient(serviceName));
+            return CreateClient<T>(_httpClientFactory.CreateClient(serviceName));
+        }
+
+        public T CreateClient<T>(HttpClient httpClient) where T : class
+        {
+            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(httpClient);
             return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
         }
     }
