@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
 using DotNetCoreRpc.Core.RpcBuilder;
+using Microsoft.Extensions.Logging;
 using Test.Service.Configs;
 
 namespace Test.Service.Filters
@@ -15,11 +16,14 @@ namespace Test.Service.Filters
         [FromServices]
         private ElasticSearchConfig ElasticSearchConfig { get; set; }
 
+        [FromServices]
+        private ILogger<CacheFilter> Logger { get; set; }
+
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
-            Console.WriteLine($"LoggerFilter begin,Parameters={context.Parameters[0].ToJson()}");
+            Logger.LogInformation($"LoggerFilter begin,Parameters={context.Parameters[0].ToJson()}");
             await next(context);
-            Console.WriteLine($"LoggerFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+            Logger.LogInformation($"LoggerFilter end,ReturnValue={context.ReturnValue.ToJson()}");
         }
     }
 }

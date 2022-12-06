@@ -17,4 +17,7 @@
     <Folder Include="Filters\" />
     <Folder Include="Configs\" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+  </ItemGroup>
 </Project>
