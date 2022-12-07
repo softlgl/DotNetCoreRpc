@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
 using DotNetCoreRpc.Core.RpcBuilder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace DotNetCoreRpc.Server
 {
@@ -27,11 +26,13 @@ namespace DotNetCoreRpc.Server
 
         public async Task InvokeAsync(HttpContext context)
         {
-            context.Request.EnableBuffering();
-            context.Request.Body.Seek(0, SeekOrigin.Begin);
-            var requestReader = new StreamReader(context.Request.Body);
-            var requestContent = await requestReader.ReadToEndAsync();
-            context.Request.Body.Seek(0, SeekOrigin.Begin);
+            //context.Request.EnableBuffering();
+            //context.Request.Body.Seek(0, SeekOrigin.Begin);
+            //var requestReader = new StreamReader(context.Request.Body);
+            //var requestContent = await requestReader.ReadToEndAsync();
+            //context.Request.Body.Seek(0, SeekOrigin.Begin);
+
+            var requestContent = await context.Request.ReadStringAsync();
             ResponseModel responseModel = new ResponseModel
             {
                 Code = 500

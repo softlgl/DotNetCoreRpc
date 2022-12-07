@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
 using DotNetCoreRpc.Core.RpcBuilder;
+using Microsoft.Extensions.Logging;
 using Test.Service.Configs;
 
 namespace Test.Service.Filters
@@ -14,15 +16,18 @@ namespace Test.Service.Filters
         [FromServices]
         private RedisConfig RedisConfig { get; set; }
 
+        [FromServices]
+        private ILogger<CacheFilter> Logger { get; set; }
+
         public CacheFilter(ElasticSearchConfig elasticSearchConfig)
         {
             _elasticSearchConfig = elasticSearchConfig;
         }
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
-            Debug.WriteLine($"CacheFilter begin,Parameters={context.Parameters}");
+            Logger.LogInformation($"CacheFilter begin,Parameters={context.Parameters}");
             await next(context);
-            Debug.WriteLine($"CacheFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+            Logger.LogInformation($"CacheFilter end,ReturnValue={context.ReturnValue.ToJson()}");
         }
     }
 }
