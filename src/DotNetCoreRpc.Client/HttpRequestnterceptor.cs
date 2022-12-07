@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using DotNetCoreRpc.Core;
@@ -19,6 +20,11 @@ namespace DotNetCoreRpc.Client
 
         public void Intercept(IInvocation invocation)
         {
+            HandleRequest(invocation).GetAwaiter().GetResult();
+        }
+
+        private async Task HandleRequest(IInvocation invocation)
+        {
             var methodInfo = invocation.Method;
             var requestModel = new RequestModel
             {
@@ -28,17 +34,17 @@ namespace DotNetCoreRpc.Client
             };
             HttpContent httpContent = new StringContent(requestModel.ToJson());
             httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            var responseMessage = _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent).GetAwaiter().GetResult();
+            var responseMessage = await _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent);
             if (responseMessage.StatusCode == HttpStatusCode.OK)
             {
                 var methodReturnType = methodInfo.ReturnType.GetTypeInfo();
-                string result = responseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                if (!string.IsNullOrEmpty(result))
+                byte[] result = await responseMessage.Content.ReadAsByteArrayAsync();
+                if (result != null && result.Length != 0)
                 {
                     ResponseModel responseModel = result.FromJson<ResponseModel>();
                     if (responseModel.Code != (int)HttpStatusCode.OK)
                     {
-                        throw new Exception($"请求出错,返回内容:{result}");
+                        throw new Exception($"请求出错,返回内容:{Encoding.UTF8.GetString(result)}");
                     }
                     if (responseModel.Data != null)
                     {
@@ -58,9 +64,9 @@ namespace DotNetCoreRpc.Client
 
                         if (methodReturnType.IsValueTaskWithResult())
                         {
-                            invocation.ReturnValue = TaskUtils.ValueTaskResultFunc(resultType).Invoke(returnValue);   
+                            invocation.ReturnValue = TaskUtils.ValueTaskResultFunc(resultType).Invoke(returnValue);
                             return;
-                        }    
+                        }
                     }
 
                     if (methodReturnType.IsTask() || methodReturnType.IsValueTask())
