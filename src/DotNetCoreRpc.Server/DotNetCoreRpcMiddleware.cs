@@ -167,21 +167,33 @@ namespace DotNetCoreRpc.Server
                     var returnValueType = returnValue.GetType().GetTypeInfo();
                     if (returnValueType.IsAsync())
                     {
+                        if (returnValueType.IsTask() || returnValueType.IsValueTask())
+                        {
+                            return;
+                        }
+
+                        if (returnValueType.IsTaskWithVoidTaskResult())
+                        {
+                            return;
+                        }
+
                         if (returnValueType.IsTaskWithResult())
                         {
                             aspectContext.ReturnValue = TaskUtils.CreateFuncToGetTaskResult(returnValueType).Invoke(returnValue);
                             return;
                         }
+
                         if (returnValueType.IsValueTaskWithResult())
                         {
                             await TaskUtils.ValueTaskWithResultToTask(returnValue, returnValueType);
                             aspectContext.ReturnValue = TaskUtils.CreateFuncToGetTaskResult(returnValueType).Invoke(returnValue);
                             return;
                         }
-                        if (returnValue is Task || returnValue is ValueTask)
-                        {
-                            return;
-                        }
+                        //}
+                        //if (returnValue is Task || returnValue is ValueTask)
+                        //{
+                        //    return;
+                        //}
                     }
                     aspectContext.ReturnValue = returnValue;
                 }
