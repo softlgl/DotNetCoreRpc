@@ -15,9 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="JsonExtensions.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\DotNetCoreRpc.Core\DotNetCoreRpc.Core.csproj" />
   </ItemGroup>
 </Project>
