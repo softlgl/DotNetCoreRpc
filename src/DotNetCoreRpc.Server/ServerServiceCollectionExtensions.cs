@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace DotNetCoreRpc.Server
 {
@@ -9,7 +10,7 @@ namespace DotNetCoreRpc.Server
         {
             RpcServerOptions rpcServerOptions = new RpcServerOptions(services);
             options.Invoke(rpcServerOptions);
-            services.AddSingleton(rpcServerOptions);
+            services.TryAddSingleton(rpcServerOptions);
             return services;
         }
     }

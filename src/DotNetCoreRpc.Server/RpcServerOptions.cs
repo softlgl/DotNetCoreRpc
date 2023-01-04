@@ -8,8 +8,12 @@ namespace DotNetCoreRpc.Server
 {
     public class RpcServerOptions
     {
-        private readonly IDictionary<string, Type> _types = new Dictionary<string, Type>();
+        private readonly IDictionary<string, Type> _serviceTypes = new Dictionary<string, Type>();
+        private readonly HashSet<Type> _serviceTypeSet = new HashSet<Type>();
+        private readonly HashSet<string> _serviceNameSet = new HashSet<string>();
+        private readonly HashSet<string> _serviceNameSpaceSet = new HashSet<string>();
         private readonly IList<Type> _filterTypes = new List<Type>();
+
         private readonly IServiceCollection _services;
 
         public RpcServerOptions(IServiceCollection services)
@@ -26,44 +30,59 @@ namespace DotNetCoreRpc.Server
         public RpcServerOptions AddService<TService>()
             where TService:class
         {
-            Type serviceType = typeof(TService);
-            _types.TryAdd(serviceType.FullName, serviceType);
+            _serviceTypeSet.Add(typeof(TService));
             return this;
         }
 
         public RpcServerOptions AddService(string serviceName)
         {
-            foreach (var service in _services)
-            {
-                if (serviceName.StartsWith("*")
-                    && service.ServiceType.Name.EndsWith(serviceName.Substring(1)))
-                {
-                    _types.TryAdd(service.ServiceType.FullName, service.ServiceType);
-                    continue;
-                }
-                if (service.ServiceType.Name == serviceName)
-                {
-                    _types.TryAdd(service.ServiceType.FullName, service.ServiceType);
-                }
-            }
+            _serviceNameSet.Add(serviceName);
             return this;
         }
 
         public RpcServerOptions AddNameSpace(string nameSpace)
         {
-            foreach (var service in _services)
-            {
-                if (service.ServiceType.Namespace == nameSpace)
-                {
-                    _types.TryAdd(service.ServiceType.FullName, service.ServiceType);
-                }
-            }
+            _serviceNameSpaceSet.Add(nameSpace);
             return this;
         }
 
-        public IDictionary<string, Type> GetTypes()
+        public IDictionary<string, Type> GetRegisterTypes()
         {
-            return _types.ToDictionary(i=>i.Key,i=>i.Value);
+            foreach (var serviceType in _serviceTypeSet)
+            {
+                _serviceTypes.TryAdd(serviceType.FullName, serviceType);
+            }
+
+            foreach (var serviceName in _serviceNameSet)
+            {
+                string subServiceName = serviceName[1..];
+                foreach (var service in _services)
+                {
+                    if (serviceName.StartsWith("*") && service.ServiceType.Name.EndsWith(subServiceName))
+                    {
+                        _serviceTypes.TryAdd(service.ServiceType.FullName, service.ServiceType);
+                        continue;
+                    }
+
+                    if (service.ServiceType.Name == serviceName)
+                    {
+                        _serviceTypes.TryAdd(service.ServiceType.FullName, service.ServiceType);
+                    }
+                }
+            }
+
+            foreach (var nameSpace in _serviceNameSpaceSet)
+            {
+                foreach (var service in _services)
+                {
+                    if (service.ServiceType.Namespace == nameSpace)
+                    {
+                        _serviceTypes.TryAdd(service.ServiceType.FullName, service.ServiceType);
+                    }
+                }
+            }
+
+            return _serviceTypes.ToDictionary(i => i.Key, i => i.Value);
         }
 
         public IEnumerable<Type> GetFilterTypes()
