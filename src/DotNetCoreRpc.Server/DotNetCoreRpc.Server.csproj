@@ -2,12 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
-    <Authors>softlgl</Authors>
-    <Copyright>softlgl</Copyright>
-    <Owners>softlgl</Owners>
-    <PackageProjectUrl>https://github.com/softlgl/DotNetCoreRpc</PackageProjectUrl>
     <Description>DotNetCoreRpc服务端实现包</Description>
-    <PackageVersion>1.1.0</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

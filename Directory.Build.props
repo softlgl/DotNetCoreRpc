@@ -1,0 +1,9 @@
+<Project>  
+    <PropertyGroup>
+      <Authors>softlgl</Authors>
+      <Copyright>softlgl</Copyright>
+      <Owners>softlgl</Owners>
+      <PackageProjectUrl>https://github.com/softlgl/DotNetCoreRpc</PackageProjectUrl>
+      <PackageVersion>1.1.1</PackageVersion>
+  </PropertyGroup>
+</Project>
