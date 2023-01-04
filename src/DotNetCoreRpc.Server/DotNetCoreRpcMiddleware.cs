@@ -14,35 +14,27 @@ namespace DotNetCoreRpc.Server
 {
     public class DotNetCoreRpcMiddleware
     {
-        private readonly IDictionary<string,Type> _types;
+        private readonly IDictionary<string, Type> _types;
         private readonly IEnumerable<Type> _filterTypes;
         private readonly ConcurrentDictionary<string, List<RpcFilterAttribute>> _methodFilters = new ConcurrentDictionary<string, List<RpcFilterAttribute>>();
 
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
-            _types = rpcServerOptions.GetTypes();
+            _types = rpcServerOptions.GetRegisterTypes();
             _filterTypes = rpcServerOptions.GetFilterTypes();
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            //context.Request.EnableBuffering();
-            //context.Request.Body.Seek(0, SeekOrigin.Begin);
-            //var requestReader = new StreamReader(context.Request.Body);
-            //var requestContent = await requestReader.ReadToEndAsync();
-            //context.Request.Body.Seek(0, SeekOrigin.Begin);
-
             var requestContent = await context.Request.ReadStringAsync();
-            ResponseModel responseModel = new ResponseModel
-            {
-                Code = 500
-            };
+            ResponseModel responseModel = new ResponseModel{ Code = 500 };
             if (string.IsNullOrEmpty(requestContent))
             {
                 responseModel.Message = "未读取到请求信息";
                 await context.Response.WriteAsync(responseModel.ToJson());
                 return;
             }
+
             RequestModel requestModel = requestContent.FromJson<RequestModel>();
             if (requestModel == null)
             {
@@ -50,12 +42,14 @@ namespace DotNetCoreRpc.Server
                 await context.Response.WriteAsync(responseModel.ToJson());
                 return;
             }
+
             if (!_types.ContainsKey(requestModel.TypeFullName))
             {
                 responseModel.Message = $"{requestModel.TypeFullName}未注册";
                 await context.Response.WriteAsync(responseModel.ToJson());
                 return;
             }
+
             await HandleRequest(context, requestModel);
             return;
         }
@@ -79,6 +73,7 @@ namespace DotNetCoreRpc.Server
                     paramters[i] = paramters[i].ToJson().FromJson(methodParamters[i].ParameterType);
                 }
             }
+
             RpcContext aspectContext = new RpcContext
             {
                 Parameters = paramters,
@@ -110,6 +105,7 @@ namespace DotNetCoreRpc.Server
                 };
                 await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
+
             List<RpcFilterAttribute> interceptorAttributes = GetFilterAttributes(aspectContext);
             if (interceptorAttributes.Any())
             {
