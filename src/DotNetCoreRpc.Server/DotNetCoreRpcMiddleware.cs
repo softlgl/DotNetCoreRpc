@@ -14,13 +14,13 @@ namespace DotNetCoreRpc.Server
 {
     public class DotNetCoreRpcMiddleware
     {
-        private readonly IDictionary<string, Type> _types;
+        private readonly IDictionary<string, Type> _serviceTypes;
         private readonly IEnumerable<Type> _filterTypes;
         private readonly ConcurrentDictionary<string, List<RpcFilterAttribute>> _methodFilters = new ConcurrentDictionary<string, List<RpcFilterAttribute>>();
 
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
-            _types = rpcServerOptions.GetRegisterTypes();
+            _serviceTypes = rpcServerOptions.GetRegisterTypes();
             _filterTypes = rpcServerOptions.GetFilterTypes();
         }
 
@@ -43,7 +43,7 @@ namespace DotNetCoreRpc.Server
                 return;
             }
 
-            if (!_types.ContainsKey(requestModel.TypeFullName))
+            if (!_serviceTypes.ContainsKey(requestModel.TypeFullName))
             {
                 responseModel.Message = $"{requestModel.TypeFullName}未注册";
                 await context.Response.WriteAsync(responseModel.ToJson());
@@ -60,7 +60,7 @@ namespace DotNetCoreRpc.Server
         /// <returns></returns>
         private async Task HandleRequest(HttpContext context, RequestModel requestModel)
         {
-            Type serviceType = _types[requestModel.TypeFullName];
+            Type serviceType = _serviceTypes[requestModel.TypeFullName];
             var instance = context.RequestServices.GetService(serviceType);
             var instanceType = instance.GetType();
             var method = instanceType.GetMethod(requestModel.MethodName);
