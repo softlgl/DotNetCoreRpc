@@ -37,5 +37,15 @@ namespace DotNetCoreRpc.Core
         {
             return JsonSerializer.Deserialize(utf8Json, type, serializerOptions);
         }
+
+        public static T FromJson<T>(this JsonElement jsonElement) where T : class, new()
+        {
+            return jsonElement.Deserialize<T>(serializerOptions);
+        }
+
+        public static object FromJson(this JsonElement jsonElement, Type type)
+        {
+            return jsonElement.Deserialize(type, serializerOptions);
+        }
     }
 }

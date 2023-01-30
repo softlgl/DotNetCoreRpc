@@ -12,72 +12,46 @@ namespace DotNetCoreRpc.Client
 {
     public class HttpRequestInterceptor : IInterceptor
     {
-        private readonly HttpClient _httpClient;
+        private readonly RequestHandler _requestHandler;
         public HttpRequestInterceptor(HttpClient httpClient)
         {
-            _httpClient = httpClient;
+            _requestHandler = new RequestHandler(httpClient);
         }
 
         public void Intercept(IInvocation invocation)
         {
-            HandleRequest(invocation).GetAwaiter().GetResult();
-        }
+            var methodReturnType = invocation.Method.ReturnType.GetTypeInfo();
 
-        private async Task HandleRequest(IInvocation invocation)
-        {
-            var methodInfo = invocation.Method;
-            var requestModel = new RequestModel
+            if (!methodReturnType.IsAsync())
             {
-                TypeFullName = methodInfo.DeclaringType.FullName,
-                MethodName = methodInfo.Name,
-                Paramters = invocation.Arguments
-            };
-            HttpContent httpContent = new StringContent(requestModel.ToJson());
-            httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            var responseMessage = await _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent);
-            if (responseMessage.StatusCode == HttpStatusCode.OK)
-            {
-                var methodReturnType = methodInfo.ReturnType.GetTypeInfo();
-                byte[] result = await responseMessage.Content.ReadAsByteArrayAsync();
-                if (result != null && result.Length != 0)
+                var result = _requestHandler.SyncResultHandle(invocation.Method, invocation.Arguments);
+                if (result == null)
                 {
-                    ResponseModel responseModel = result.FromJson<ResponseModel>();
-                    if (responseModel.Code != (int)HttpStatusCode.OK)
-                    {
-                        throw new Exception($"请求出错,返回内容:{Encoding.UTF8.GetString(result)}");
-                    }
-                    if (responseModel.Data != null)
-                    {
-                        if (!methodReturnType.IsAsync())
-                        {
-                            invocation.ReturnValue = responseModel.Data.ToJson().FromJson(methodInfo.ReturnType);
-                            return;
-                        }
-
-                        var returnValue = responseModel.Data.ToJson().FromJson(methodReturnType.GetGenericArguments()[0]);
-                        var resultType = invocation.Method.ReturnType.GetGenericArguments()[0];
-                        if (methodReturnType.IsTaskWithResult())
-                        {
-                            invocation.ReturnValue = TaskUtils.TaskResultFunc(resultType).Invoke(returnValue);
-                            return;
-                        }
-
-                        if (methodReturnType.IsValueTaskWithResult())
-                        {
-                            invocation.ReturnValue = TaskUtils.ValueTaskResultFunc(resultType).Invoke(returnValue);
-                            return;
-                        }
-                    }
-
-                    if (methodReturnType.IsTask() || methodReturnType.IsValueTask())
-                    {
-                        invocation.ReturnValue = Task.CompletedTask;
-                        return;
-                    }
+                    return;
                 }
+
+                invocation.ReturnValue = result;
                 return;
             }
-            throw new Exception($"请求异常,StatusCode:{responseMessage.StatusCode}");
-        }
+
+            if (methodReturnType.IsTask() || methodReturnType.IsValueTask())
+            {
+                invocation.ReturnValue = Task.CompletedTask;
+                return;
+            }
+
+            if (methodReturnType.IsTaskWithResult())
+            {
+                invocation.ReturnValue = _requestHandler.GetTaskResultHandleFunc(methodReturnType).Invoke(invocation.Method, invocation.Arguments);
+                return;
+            }
+
+            if (methodReturnType.IsValueTaskWithResult())
+            {
+                invocation.ReturnValue = _requestHandler.GetValueResultHandleFunc(methodReturnType).Invoke(invocation.Method, invocation.Arguments);
+                return;
+            }
+         }
+
     }
 }

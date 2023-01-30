@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
 using DotNetCoreRpc.Core.RpcBuilder;
@@ -27,7 +29,7 @@ namespace DotNetCoreRpc.Server
         public async Task InvokeAsync(HttpContext context)
         {
             var requestContent = await context.Request.ReadStringAsync();
-            ResponseModel responseModel = new ResponseModel{ Code = 500 };
+            ResponseModel responseModel = new ResponseModel{ Code = (int)HttpStatusCode.InternalServerError };
             if (string.IsNullOrEmpty(requestContent))
             {
                 responseModel.Message = "未读取到请求信息";
@@ -70,7 +72,10 @@ namespace DotNetCoreRpc.Server
             {
                 if (paramters[i].GetType() != methodParamters[i].ParameterType)
                 {
-                    paramters[i] = paramters[i].ToJson().FromJson(methodParamters[i].ParameterType);
+                    if (paramters[i] is JsonElement jsonElement)
+                    {
+                        paramters[i] = jsonElement.FromJson(methodParamters[i].ParameterType);
+                    }
                 }
             }
 
@@ -101,7 +106,7 @@ namespace DotNetCoreRpc.Server
                 ResponseModel responseModel = new ResponseModel
                 {
                     Data = rpcContext.ReturnValue,
-                    Code = 200
+                    Code = (int)HttpStatusCode.OK
                 };
                 await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
