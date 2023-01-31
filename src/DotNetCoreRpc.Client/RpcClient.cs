@@ -23,6 +23,7 @@ namespace DotNetCoreRpc.Client
 
         public T CreateClient<T>(HttpClient httpClient) where T : class
         {
+            httpClient.DefaultRequestHeaders.Add("req-source", "dncrpc");
             HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(httpClient);
             return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
         }
