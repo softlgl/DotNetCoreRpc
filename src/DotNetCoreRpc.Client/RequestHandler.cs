@@ -104,12 +104,9 @@ namespace DotNetCoreRpc.Client
             httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             var responseMessage = await _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent);
             byte[] result = await responseMessage.Content.ReadAsByteArrayAsync();
-            if (responseMessage.StatusCode == HttpStatusCode.OK)
-            {
-                return result;
-            }
-
-            throw new Exception($"请求异常,StatusCode:{responseMessage.StatusCode}");
+            //判断http请求状态
+            responseMessage.EnsureSuccessStatusCode();
+            return result;
         }
     }
 }
