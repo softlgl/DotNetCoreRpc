@@ -14,7 +14,7 @@
 #### Client端配置使用
 首先新建任意形式的.net core宿主，为了简单我使用的是Console程序,引入DotNetCoreRpc.Client包和DependencyInjection相关包
 ```
-<PackageReference Include="DotNetCoreRpc.Client" Version="1.1.1" />
+<PackageReference Include="DotNetCoreRpc.Client" Version="1.1.2" />
 ```
 引入自己的服务接口包我这里是Test.IService,只需要引入interface层即可,写入如下测试代码,具体代码可参阅demo，由于DotNetCoreRpc通信是基于HttpClientFactory的，所以需要注册HttpClientFactory
 ```cs
@@ -64,7 +64,30 @@ class Program
         Console.WriteLine($"删除Person,id=1完成");
         persons = await personService.GetPersons();
         Console.WriteLine($"最后获取Persons,persons=[{persons.ToJson()}]");
-        Console.ReadLine();
+
+        IProductService productService = rpcClient.CreateClient<IProductService>(TestServerName);
+        ProductDto product = new ProductDto
+        {
+            Id = 1000,
+            Name="抗原",
+            Price = 158.22M
+        };
+        int productAddResult = await productService.Add(product);
+        Console.WriteLine($"添加Product1:{productAddResult==1}");
+        product = productService.Get(1000);
+        Console.WriteLine($"获取添加Product1,id=1000,person=[{product.ToJson()}]");
+        product = new ProductDto
+        {
+            Id = 2000,
+            Name = "N95口罩",
+            Price = 35.5M
+        };
+        productAddResult = await productService.Add(product);
+        Console.WriteLine($"添加Product2:{productAddResult == 1}");
+        product = productService.Get(2000);
+        Console.WriteLine($"获取添加Product2,id=2000,person=[{product.ToJson()}]");
+        var products = await productService.GetProducts();
+        Console.WriteLine($"products=[{products.ToJson()}]");
     }
 }
 ```
@@ -72,7 +95,7 @@ class Program
 
 新建一个最简单的Asp.net Core项目,我这里的Demo是新建的Asp.net Core的空项目,引入DotNetCoreRpc.Server包
 ```
-<PackageReference Include="DotNetCoreRpc.Server" Version="1.1.1" />
+<PackageReference Include="DotNetCoreRpc.Server" Version="1.1.2" />
 ```
 然后添加注入和相关中间件
 ```cs
@@ -123,6 +146,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IPersonDal, PersonDal>()
                .AddSingleton<IPersonService, PersonService>()
+               .AddSingleton<IProductDal, ProductDal>()
+               .AddSingleton<IProductService, ProductService>()
                .AddSingleton(new RedisConfig { Address = "127.0.0.1:6379", db = 10 })
                .AddSingleton(new ElasticSearchConfig { Address = "127.0.0.1:9200" })
                .AddDotNetCoreRpcServer(options => {
@@ -132,8 +157,6 @@ builder.Services.AddSingleton<IPersonDal, PersonDal>()
                     options.AddNameSpace("Test.IService");
                     options.AddFilter<CacheFilter>();
                });
-
-var app = builder.Build();
 
 app.UseDotNetCoreRpc();
 app.MapGet("/", () => "Hello World!");
@@ -146,9 +169,11 @@ public class CacheFilter : RpcFilterAttribute
 {
     private readonly ElasticSearchConfig _elasticSearchConfig;
 
-    //支持属性注入public private都可以
     [FromServices]
     private RedisConfig RedisConfig { get; set; }
+
+    [FromServices]
+    private ILogger<CacheFilter> Logger { get; set; }
 
     public CacheFilter(ElasticSearchConfig elasticSearchConfig)
     {
@@ -156,9 +181,9 @@ public class CacheFilter : RpcFilterAttribute
     }
     public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
     {
-        Debug.WriteLine($"CacheFilter begin,Parameters={context.Parameters}");
+        Logger.LogInformation($"CacheFilter begin,Parameters={context.Parameters}");
         await next(context);
-        Debug.WriteLine($"CacheFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+        Logger.LogInformation($"CacheFilter end,ReturnValue={context.ReturnValue.ToJson()}");
     }
- }
+}
 ```
