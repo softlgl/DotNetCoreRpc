@@ -18,7 +18,6 @@ namespace DotNetCoreRpc.Server
     {
         private readonly IDictionary<string, Type> _serviceTypes;
         private readonly IEnumerable<Type> _filterTypes;
-        private readonly ConcurrentDictionary<string, List<RpcFilterAttribute>> _methodFilters = new ConcurrentDictionary<string, List<RpcFilterAttribute>>();
 
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
@@ -111,7 +110,7 @@ namespace DotNetCoreRpc.Server
                 await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
 
-            List<RpcFilterAttribute> interceptorAttributes = GetFilterAttributes(aspectContext);
+            List<RpcFilterAttribute> interceptorAttributes = RpcFilterUtils.GetFilterAttributes(aspectContext, _filterTypes);
             if (interceptorAttributes.Any())
             {
                 foreach (var item in interceptorAttributes)
@@ -165,30 +164,6 @@ namespace DotNetCoreRpc.Server
                 }
                 return;
             };
-        }
-
-        /// <summary>
-        /// 获取Attribute
-        /// </summary>
-        /// <returns></returns>
-        private List<RpcFilterAttribute> GetFilterAttributes(RpcContext aspectContext)
-        {
-            var methondInfo = aspectContext.Method;
-            var methondInterceptorAttributes = _methodFilters.GetOrAdd($"{methondInfo.DeclaringType.FullName}#{methondInfo.Name}",
-                key=>{
-                    var methondAttributes = methondInfo.GetCustomAttributes(true)
-                                   .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
-                                   .Cast<RpcFilterAttribute>().ToList();
-                    var classAttributes = methondInfo.DeclaringType.GetCustomAttributes(true)
-                        .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
-                        .Cast<RpcFilterAttribute>();
-                    methondAttributes.AddRange(classAttributes);
-                    var glableInterceptorAttribute = RpcFilterUtils.GetInstances(aspectContext.HttpContext.RequestServices, _filterTypes);
-                    methondAttributes.AddRange(glableInterceptorAttribute);
-                    return methondAttributes;
-                });
-            RpcFilterUtils.PropertiesInject(aspectContext.HttpContext.RequestServices, methondInterceptorAttributes);
-            return methondInterceptorAttributes;
         }
     }
 }
