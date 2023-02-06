@@ -98,10 +98,13 @@ namespace DotNetCoreRpc.Server
         private AspectPiplineBuilder CreatPipleline(RpcContext aspectContext)
         {
             AspectPiplineBuilder aspectPipline = new AspectPiplineBuilder();
+
             //第一个中间件构建包装数据
             aspectPipline.Use(async (rpcContext, next) =>
             {
                 await next(rpcContext);
+
+                //返回结果
                 ResponseModel responseModel = new ResponseModel
                 {
                     Data = rpcContext.ReturnValue,
