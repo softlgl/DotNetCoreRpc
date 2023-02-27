@@ -102,7 +102,11 @@ namespace DotNetCoreRpc.Client
 
             HttpContent httpContent = new StringContent(requestModel.ToJson());
             httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            var responseMessage = await _httpClient.PostAsync("/DotNetCoreRpc/ServerRequest", httpContent);
+
+            string path = string.IsNullOrWhiteSpace(_httpClient.BaseAddress.PathAndQuery) || _httpClient.BaseAddress.PathAndQuery == "/" 
+                ? "/DotNetCoreRpc/ServerRequest" : "";
+
+            var responseMessage = await _httpClient.PostAsync(path, httpContent);
             byte[] result = await responseMessage.Content.ReadAsByteArrayAsync();
             //判断http请求状态
             responseMessage.EnsureSuccessStatusCode();

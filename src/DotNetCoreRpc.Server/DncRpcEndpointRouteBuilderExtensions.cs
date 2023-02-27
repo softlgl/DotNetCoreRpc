@@ -12,14 +12,16 @@ namespace DotNetCoreRpc.Server
     /// </summary>
     public static class DncRpcEndpointRouteBuilderExtensions
     {
-        public static IEndpointConventionBuilder MapDotNetCoreRpc(this IEndpointRouteBuilder endpoints)
+        public static IEndpointConventionBuilder MapDotNetCoreRpc(this IEndpointRouteBuilder endpoints, string path = default)
         {
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
             }
-            RequestDelegate requestDelegate = endpoints.CreateApplicationBuilder().UseDotNetCoreRpc().Build();
-            return endpoints.MapPost("/DotNetCoreRpc/ServerRequest", requestDelegate);
+
+            path = string.IsNullOrWhiteSpace(path) ? "/DotNetCoreRpc/ServerRequest" : path;
+            RequestDelegate requestDelegate = endpoints.CreateApplicationBuilder().UseDotNetCoreRpc(path).Build();
+            return endpoints.MapPost(path, requestDelegate);
         }
     }
 }

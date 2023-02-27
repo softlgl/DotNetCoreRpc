@@ -42,7 +42,7 @@ namespace Test.Server
                     options.AddNameSpace("Test.IService");
                     options.AddFilter<CacheFilter>();
                  });
-            //services.AddNacosAspNet(Configuration);
+            services.AddNacosAspNet(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -53,7 +53,7 @@ namespace Test.Server
             app.UseEndpoints(endpoint => {
                 endpoint.Map("/", async context=>await context.Response.WriteAsync("server start!"));
                 //通过endpoint的方式引入
-                endpoint.MapDotNetCoreRpc();
+                endpoint.MapDotNetCoreRpc("/Test.Server6");
             });
         }
     }

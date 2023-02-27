@@ -24,7 +24,7 @@ builder.Services.AddSingleton<IPersonDal, PersonDal>()
 
 var app = builder.Build();
 
-app.UseDotNetCoreRpc();
+app.UseDotNetCoreRpc("/Test.Server6");
 app.MapGet("/", () => "Hello World!");
 
 app.Run();
