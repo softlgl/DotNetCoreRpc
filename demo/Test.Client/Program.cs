@@ -27,12 +27,13 @@ namespace Test.Client
             IServiceCollection services = new ServiceCollection();
             services.AddLogging().AddDotNetCoreRpcClient()
             //单机版Httpclient配置
-            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
+            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/Test.Server6"); });
             //基于Nacos注册中心
             //.AddNacosV2Naming(configuration)
             //.AddScoped<NacosDiscoveryDelegatingHandler>()
-            //.AddHttpClient(TestServerName, client => {
-            //    client.BaseAddress = new Uri($"http://{TestServerName}");
+            //.AddHttpClient(TestServerName, client =>
+            //{
+            //    client.BaseAddress = new Uri($"http://{TestServerName}/Test.Server6");
             //}).AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
