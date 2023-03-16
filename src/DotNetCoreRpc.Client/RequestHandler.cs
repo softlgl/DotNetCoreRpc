@@ -31,6 +31,11 @@ namespace DotNetCoreRpc.Client
             return TaskResultHandle<object>(methodInfo, arguments).GetAwaiter().GetResult();
         }
 
+        public Task TaskValueTaskWithoutResultHandle(MethodInfo methodInfo, params object[] arguments)
+        {
+            return TaskResultHandle<object>(methodInfo, arguments);
+        }
+
         public Func<MethodInfo, object[], object> GetTaskResultHandleFunc(TypeInfo methodReturnType)
         {
             return _taskFuncCache.GetOrAdd(methodReturnType, type => {
@@ -70,7 +75,7 @@ namespace DotNetCoreRpc.Client
                 }
 
                 TypeInfo methodReturnType = methodInfo.ReturnType.GetTypeInfo();
-                if (methodReturnType.IsAsync())
+                if (methodReturnType.IsAsync() && !methodReturnType.IsTask() && !methodReturnType.IsValueTask())
                 {
                     methodReturnType = methodReturnType.GetGenericArguments()[0].GetTypeInfo();
                 }

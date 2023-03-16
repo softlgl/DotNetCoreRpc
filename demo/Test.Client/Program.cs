@@ -171,6 +171,9 @@ namespace Test.Client
             Console.WriteLine($"获取添加Product2,id=2000,person=[{product.ToJson()}]");
             var products = await productService.GetProducts();
             Console.WriteLine($"products=[{products.ToJson()}]");
+            Task editTask = productService.Edit(1);
+            await editTask;
+            Console.WriteLine($"修改Product,id=1完成");
 
             //BenchmarkRunner.Run<RpcClientBenchTest>();
 
