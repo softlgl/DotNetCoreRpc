@@ -27,6 +27,7 @@ class Program
         services.AddDotNetCoreRpcClient()
         //*通信基于HttpClientFactory,自行注册即可
         .AddHttpClient("TestServer", client => { client.BaseAddress = new Uri("http://localhost:34047/"); });
+        //.AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/Test.Server6"); });
 
         IServiceProvider serviceProvider = services.BuildServiceProvider();
         //*RpcClient使用这个类创建具体服务代理
@@ -136,6 +137,7 @@ public class Startup
             endpoint.Map("/", async context=>await context.Response.WriteAsync("server start!"));
             //通过endpoint的方式引入
             endpoint.MapDotNetCoreRpc();
+            //endpoint.MapDotNetCoreRpc("/Test.Server6");
         });
     }
 }
@@ -159,6 +161,7 @@ builder.Services.AddSingleton<IPersonDal, PersonDal>()
                });
 
 app.UseDotNetCoreRpc();
+//app.UseDotNetCoreRpc("/Test.Server6");
 app.MapGet("/", () => "Hello World!");
 
 app.Run();
