@@ -36,7 +36,7 @@ namespace DotNetCoreRpc.Client
 
             if (methodReturnType.IsTask() || methodReturnType.IsValueTask())
             {
-                invocation.ReturnValue = Task.CompletedTask;
+                invocation.ReturnValue = _requestHandler.TaskValueTaskWithoutResultHandle(invocation.Method, invocation.Arguments);
                 return;
             }
 
