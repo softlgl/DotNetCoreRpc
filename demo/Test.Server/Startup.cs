@@ -42,7 +42,7 @@ namespace Test.Server
                     options.AddNameSpace("Test.IService");
                     options.AddFilter<CacheFilter>();
                  });
-            services.AddNacosAspNet(Configuration);
+            //services.AddNacosAspNet(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

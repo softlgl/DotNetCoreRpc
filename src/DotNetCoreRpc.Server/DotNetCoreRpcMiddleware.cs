@@ -140,12 +140,7 @@ namespace DotNetCoreRpc.Server
                     var returnValueType = returnValue.GetType().GetTypeInfo();
                     if (returnValueType.IsAsync())
                     {
-                        if (returnValueType.IsTask() || returnValueType.IsValueTask())
-                        {
-                            return;
-                        }
-
-                        if (returnValueType.IsTaskWithVoidTaskResult())
+                        if (returnValueType.IsTask() || returnValueType.IsValueTask() || returnValueType.IsTaskWithVoidTaskResult())
                         {
                             return;
                         }

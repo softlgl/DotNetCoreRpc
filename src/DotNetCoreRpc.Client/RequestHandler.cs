@@ -75,7 +75,7 @@ namespace DotNetCoreRpc.Client
                 }
 
                 TypeInfo methodReturnType = methodInfo.ReturnType.GetTypeInfo();
-                if (methodReturnType.IsAsync() && !methodReturnType.IsTask() && !methodReturnType.IsValueTask())
+                if (methodReturnType.IsAsync() && (methodReturnType.IsTaskWithResult() || methodReturnType.IsValueTaskWithResult()))
                 {
                     methodReturnType = methodReturnType.GetGenericArguments()[0].GetTypeInfo();
                 }
