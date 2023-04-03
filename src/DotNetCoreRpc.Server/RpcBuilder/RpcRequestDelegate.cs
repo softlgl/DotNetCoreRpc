@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DotNetCoreRpc.Core.RpcBuilder
+namespace DotNetCoreRpc.Server.RpcBuilder
 {
     public delegate Task RpcRequestDelegate(RpcContext context);
 }

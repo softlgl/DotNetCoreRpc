@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 
-namespace DotNetCoreRpc.Core.RpcBuilder
+namespace DotNetCoreRpc.Server.RpcBuilder
 {
     public class RpcContext
     {

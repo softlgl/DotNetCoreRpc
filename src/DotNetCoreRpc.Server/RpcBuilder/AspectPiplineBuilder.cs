@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DotNetCoreRpc.Core.RpcBuilder
+namespace DotNetCoreRpc.Server.RpcBuilder
 {
     public class AspectPiplineBuilder
     {
