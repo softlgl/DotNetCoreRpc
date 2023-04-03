@@ -15,5 +15,3 @@
 由于`v1.1.3之后版本`优化了一下client和server端的注册方式，所以分两个文档介绍。
 + [v1.1.3及之前版本](https://github.com/softlgl/DotNetCoreRpc/blob/master/docs/1.1.3及之前版本.md)
 + [v1.1.3之后版本](https://github.com/softlgl/DotNetCoreRpc/blob/master/docs/1.1.3更高版本.md)
-
-
