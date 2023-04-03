@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DotNetCoreRpc.Core.RpcBuilder
+namespace DotNetCoreRpc.Server.RpcBuilder
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public abstract class RpcFilterAttribute : Attribute

@@ -9,26 +9,25 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
-using DotNetCoreRpc.Core.RpcBuilder;
+using DotNetCoreRpc.Server.RpcBuilder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetCoreRpc.Server
 {
     public class DotNetCoreRpcMiddleware
     {
-        private readonly IDictionary<string, Type> _serviceTypes;
-        private readonly IEnumerable<Type> _filterTypes;
+        private readonly RpcServerOptions _rpcServerOptions;
 
         public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
         {
-            _serviceTypes = rpcServerOptions.GetRegisterTypes();
-            _filterTypes = rpcServerOptions.GetFilterTypes();
+            _rpcServerOptions = rpcServerOptions;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
             var requestContent = await context.Request.ReadStringAsync();
-            ResponseModel responseModel = new ResponseModel{ Code = (int)HttpStatusCode.InternalServerError };
+            ResponseModel responseModel = new ResponseModel { Code = (int)HttpStatusCode.InternalServerError };
             if (string.IsNullOrEmpty(requestContent))
             {
                 responseModel.Message = "未读取到请求信息";
@@ -44,13 +43,6 @@ namespace DotNetCoreRpc.Server
                 return;
             }
 
-            if (!_serviceTypes.ContainsKey(requestModel.TypeFullName))
-            {
-                responseModel.Message = $"{requestModel.TypeFullName}未注册";
-                await context.Response.WriteAsync(responseModel.ToJson());
-                return;
-            }
-
             await HandleRequest(context, requestModel);
             return;
         }
@@ -61,8 +53,8 @@ namespace DotNetCoreRpc.Server
         /// <returns></returns>
         private async Task HandleRequest(HttpContext context, RequestModel requestModel)
         {
-            Type serviceType = _serviceTypes[requestModel.TypeFullName];
-            var instance = context.RequestServices.GetService(serviceType);
+            var serviceType = _rpcServerOptions.GetServiceType(requestModel.TypeFullName);
+            var instance = context.RequestServices.GetRequiredService(serviceType);
             var instanceType = instance.GetType();
             var method = instanceType.GetMethod(requestModel.MethodName);
             var methodParamters = method.GetParameters();
@@ -113,7 +105,7 @@ namespace DotNetCoreRpc.Server
                 await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
 
-            List<RpcFilterAttribute> interceptorAttributes = RpcFilterUtils.GetFilterAttributes(aspectContext, _filterTypes);
+            List<RpcFilterAttribute> interceptorAttributes = RpcFilterUtils.GetFilterAttributes(aspectContext, _rpcServerOptions.GetFilterTypes());
             if (interceptorAttributes.Any())
             {
                 foreach (var item in interceptorAttributes)

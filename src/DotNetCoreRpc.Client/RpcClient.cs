@@ -1,30 +1,26 @@
-﻿using System;
+﻿using Castle.DynamicProxy;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
-using Castle.DynamicProxy;
-using System.Collections.Concurrent;
+using System.Text;
 
 namespace DotNetCoreRpc.Client
 {
-    public class RpcClient
+    internal class RpcClient
     {
-        private readonly ProxyGenerator _proxyGenerator;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private HttpClient _httpClient;
+        private ProxyGenerator _proxyGenerator;
 
-        public RpcClient(ProxyGenerator proxyGenerator, IHttpClientFactory httpClientFactory)
+        public RpcClient(HttpClient httpClient, ProxyGenerator proxyGenerator)
         {
+            _httpClient = httpClient;
+            _httpClient.DefaultRequestHeaders.Add("req-source", "dncrpc");
             _proxyGenerator = proxyGenerator;
-            _httpClientFactory = httpClientFactory;
         }
 
-        public T CreateClient<T>(string serviceName) where T : class
+        internal T CreateClient<T>() where T : class
         {
-            return CreateClient<T>(_httpClientFactory.CreateClient(serviceName));
-        }
-
-        public T CreateClient<T>(HttpClient httpClient) where T : class
-        {
-            httpClient.DefaultRequestHeaders.Add("req-source", "dncrpc");
-            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(httpClient);
+            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClient);
             return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
         }
     }

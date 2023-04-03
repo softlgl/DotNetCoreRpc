@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+	  <TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +11,7 @@
     <ProjectReference Include="..\Test.Model\Test.Model.csproj" />
     <ProjectReference Include="..\Test.IService\Test.IService.csproj" />
     <ProjectReference Include="..\Test.IDAL\Test.IDAL.csproj" />
-    <ProjectReference Include="..\..\src\DotNetCoreRpc.Core\DotNetCoreRpc.Core.csproj" />
+	<ProjectReference Include="..\..\src\DotNetCoreRpc.Server\DotNetCoreRpc.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Filters\" />

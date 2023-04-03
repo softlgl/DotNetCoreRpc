@@ -3,10 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DotNetCoreRpc.Core.RpcBuilder;
+using DotNetCoreRpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DotNetCoreRpc.Core
+namespace DotNetCoreRpc.Server.RpcBuilder
 {
     public static class RpcFilterUtils
     {
@@ -22,7 +22,8 @@ namespace DotNetCoreRpc.Core
             var methondInfo = aspectContext.Method;
 
             var methondInterceptorAttributes = _methodFilters.GetOrAdd($"{methondInfo.DeclaringType.FullName}#{methondInfo.Name}",
-                key => {
+                key =>
+                {
                     var methondAttributes = methondInfo.GetCustomAttributes(true)
                                    .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
                                    .Cast<RpcFilterAttribute>().ToList();
