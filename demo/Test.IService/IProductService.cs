@@ -11,6 +11,6 @@ namespace Test.IService
         Task<List<ProductDto>> GetProducts();
         ValueTask<int> Add(ProductDto person);
         void Delete(int id);
-        Task Edit(int id);
+        ValueTask Edit(int id);
     }
 }

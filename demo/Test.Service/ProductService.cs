@@ -28,9 +28,9 @@ namespace Test.Service
             _productDal.Delete(id);
         }
 
-        public Task Edit(int id)
+        public ValueTask Edit(int id)
         {
-            return Task.CompletedTask;
+            return new ValueTask(Task.CompletedTask);
         }
 
         [LoggerFilter]
