@@ -25,9 +25,12 @@ namespace Test.Client
             var configuration = builder.Build();
 
             IServiceCollection services = new ServiceCollection();
-            services.AddLogging().AddDotNetCoreRpcClient()
+            services.AddLogging()
             //单机版Httpclient配置
-            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/Test.Server6"); });
+            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/Test.Server6"); })
+            .AddDotNetCoreRpcClient(options => {
+                options.AddRpcClient<IPersonService>().AddRpcClient<IProductService>();
+            });
             //基于Nacos注册中心
             //.AddNacosV2Naming(configuration)
             //.AddScoped<NacosDiscoveryDelegatingHandler>()
@@ -36,9 +39,9 @@ namespace Test.Client
             //    client.BaseAddress = new Uri($"http://{TestServerName}/Test.Server6");
             //}).AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>();
 
-            IServiceProvider serviceProvider = services.BuildServiceProvider();
-            RpcClient rpcClient = serviceProvider.GetRequiredService<RpcClient>();
-            IPersonService personService = rpcClient.CreateClient<IPersonService>(TestServerName);
+            using var scope = services.BuildServiceProvider().CreateScope();
+            IServiceProvider serviceProvider = scope.ServiceProvider;
+            IPersonService personService = serviceProvider.GetService<IPersonService>();
 
             int maxCount = 10000;
 
@@ -148,7 +151,7 @@ namespace Test.Client
             stopwatch.Stop();
             Console.WriteLine($"tasks await:{stopwatch.Elapsed.TotalMilliseconds}");
 
-            IProductService productService = rpcClient.CreateClient<IProductService>(TestServerName);
+            IProductService productService = serviceProvider.GetService<IProductService>();
             ProductDto product = new ProductDto
             {
                 Id = 1000,

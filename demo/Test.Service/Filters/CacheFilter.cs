@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
-using DotNetCoreRpc.Core.RpcBuilder;
+using DotNetCoreRpc.Server.RpcBuilder;
 using Microsoft.Extensions.Logging;
 using Test.Service.Configs;
 
@@ -23,6 +23,7 @@ namespace Test.Service.Filters
         {
             _elasticSearchConfig = elasticSearchConfig;
         }
+
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
             Logger.LogInformation($"CacheFilter begin,Parameters={context.Parameters}");

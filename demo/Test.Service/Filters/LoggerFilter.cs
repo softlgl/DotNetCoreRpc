@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
-using DotNetCoreRpc.Core.RpcBuilder;
+using DotNetCoreRpc.Server.RpcBuilder;
 using Microsoft.Extensions.Logging;
 using Test.Service.Configs;
 
