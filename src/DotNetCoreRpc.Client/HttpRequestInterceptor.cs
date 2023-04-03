@@ -34,9 +34,15 @@ namespace DotNetCoreRpc.Client
                 return;
             }
 
-            if (methodReturnType.IsTask() || methodReturnType.IsValueTask())
+            if (methodReturnType.IsTask())
             {
                 invocation.ReturnValue = _requestHandler.TaskValueTaskWithoutResultHandle(invocation.Method, invocation.Arguments);
+                return;
+            }
+
+            if (methodReturnType.IsValueTask())
+            {
+                invocation.ReturnValue = new ValueTask(_requestHandler.TaskValueTaskWithoutResultHandle(invocation.Method, invocation.Arguments));
                 return;
             }
 
