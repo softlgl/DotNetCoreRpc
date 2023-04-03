@@ -71,7 +71,7 @@ namespace DotNetCoreRpc.Client
                 ResponseModel responseModel = result.FromJson<ResponseModel>();
                 if (responseModel.Code != (int)HttpStatusCode.OK)
                 {
-                    throw new Exception($"请求出错,返回内容:{Encoding.UTF8.GetString(result)}");
+                    throw new Exception($"请求出错,返回内容:{responseModel.Message}");
                 }
 
                 TypeInfo methodReturnType = methodInfo.ReturnType.GetTypeInfo();
