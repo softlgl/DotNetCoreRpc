@@ -27,8 +27,9 @@ namespace Test.Client
             IServiceCollection services = new ServiceCollection();
             services.AddLogging()
             //单机版Httpclient配置
-            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047/Test.Server6"); })
+            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047"); })
             .AddDotNetCoreRpcClient(options => {
+                options.Path = "/Test.Server6";
                 options.AddRpcClient<IPersonService>().AddRpcClient<IProductService>();
             });
             //基于Nacos注册中心
