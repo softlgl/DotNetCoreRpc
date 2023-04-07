@@ -102,6 +102,12 @@ namespace DotNetCoreRpc.Server
                     Data = rpcContext.ReturnValue,
                     Code = (int)HttpStatusCode.OK
                 };
+
+                if (rpcContext.ReturnValue is ResponseModel returnValue)
+                {
+                    responseModel = returnValue;
+                }
+
                 await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
 
