@@ -6,10 +6,14 @@ namespace DotNetCoreRpc.Server
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddDotNetCoreRpcServer(this IServiceCollection services, Action<RpcServerOptions> options)
+        public static IServiceCollection AddDotNetCoreRpcServer(this IServiceCollection services, Action<RpcServerOptions> options = null)
         {
             RpcServerOptions rpcServerOptions = new RpcServerOptions();
-            options.Invoke(rpcServerOptions);
+            if (options != null)
+            {
+                options.Invoke(rpcServerOptions);
+            }
+
             services.TryAddSingleton(rpcServerOptions);
             return services;
         }

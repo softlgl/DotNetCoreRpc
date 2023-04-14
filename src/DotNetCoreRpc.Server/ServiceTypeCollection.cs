@@ -10,7 +10,7 @@ namespace DotNetCoreRpc.Server
     internal class ServiceTypeCollection
     {
         private readonly ConcurrentDictionary<string, Type> _serviceTypes = new ConcurrentDictionary<string, Type>();
-        private readonly Assembly[] _assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        private readonly Lazy<Assembly[]> _assemblies = new Lazy<Assembly[]>(() => AppDomain.CurrentDomain.GetAssemblies(), true);
 
         internal Type this[string serviceName]
         {
@@ -20,7 +20,7 @@ namespace DotNetCoreRpc.Server
         internal Type GetServiceType(string serviceName)
         {
             return _serviceTypes.GetOrAdd(serviceName, typeName => {
-                Type serviceType = _assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
+                Type serviceType = _assemblies.Value.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
 
                 if (serviceType == null)
                 {
