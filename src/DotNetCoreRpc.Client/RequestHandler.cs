@@ -28,7 +28,7 @@ namespace DotNetCoreRpc.Client
 
         public object SyncResultHandle(MethodInfo methodInfo, params object[] arguments)
         {
-            return TaskResultHandle<object>(methodInfo, arguments).GetAwaiter().GetResult();
+            return TaskResultHandle<object>(methodInfo, arguments).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public Task TaskValueTaskWithoutResultHandle(MethodInfo methodInfo, params object[] arguments)
