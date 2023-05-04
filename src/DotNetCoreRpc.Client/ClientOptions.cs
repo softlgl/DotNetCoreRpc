@@ -10,29 +10,37 @@ namespace DotNetCoreRpc.Client
 {
     public class ClientOptions
     {
-        private IServiceCollection _services;
-        private readonly string _serviceName;
-
         /// <summary>
         /// 服务请求路径
         /// </summary>
         public string Path { get; set; }
 
+        /// <summary>
+        /// 服务名称
+        /// </summary>
+        public string ServiceName { get; }
+
+        public IServiceCollection Services { get; }
+
         public ClientOptions(IServiceCollection services, string serviceName)
         {
-            _services = services;
-            _serviceName = serviceName;
+            Services = services;
+            ServiceName = serviceName;
         }
 
         public ClientOptions AddRpcClient<T>() where T : class
         {
-            _services.TryAddScoped(provider => {
-                var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var proxyGenerator = provider.GetRequiredService<ProxyGenerator>();
-                var httpClient = httpClientFactory.CreateClient(_serviceName);
-                RpcClient rpcClient = new RpcClient(httpClient, proxyGenerator, Path);
+            Services.TryAddScoped(provider => AddRpcClient(provider));
+
+            T AddRpcClient(IServiceProvider serviceProvider)
+            {
+                var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+                var proxyGenerator = serviceProvider.GetRequiredService<ProxyGenerator>();
+                var httpClient = httpClientFactory.CreateClient(ServiceName);
+                RpcClient rpcClient = new RpcClient(this, httpClient, proxyGenerator);
                 return rpcClient.CreateClient<T>();
-            });
+            }
+
             return this;
         }
     }
