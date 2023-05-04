@@ -13,11 +13,11 @@ namespace DotNetCoreRpc.Client
         private ProxyGenerator _proxyGenerator;
         private string _path;
 
-        public RpcClient(HttpClient httpClient, ProxyGenerator proxyGenerator, string path)
+        public RpcClient(ClientOptions clientOptions, HttpClient httpClient, ProxyGenerator proxyGenerator)
         {
+            _path = clientOptions.Path;
             _httpClient = httpClient;
             _proxyGenerator = proxyGenerator;
-            _path = path;
         }
 
         internal T CreateClient<T>() where T : class
