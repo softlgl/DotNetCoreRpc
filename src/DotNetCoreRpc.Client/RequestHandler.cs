@@ -112,9 +112,10 @@ namespace DotNetCoreRpc.Client
                 ? "/DotNetCoreRpc/ServerRequest" : "";
 
             var responseMessage = await _httpClient.PostAsync(path, httpContent);
-            byte[] result = await responseMessage.Content.ReadAsByteArrayAsync();
             //判断http请求状态
             responseMessage.EnsureSuccessStatusCode();
+
+            byte[] result = await responseMessage.Content.ReadAsByteArrayAsync();
             return result;
         }
     }
