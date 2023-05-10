@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="nacos-sdk-csharp.AspNetCore" Version="1.1.0" />
+	</ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotNetCoreRpc.Server\DotNetCoreRpc.Server.csproj" />
     <ProjectReference Include="..\Test.DAL\Test.DAL.csproj" />

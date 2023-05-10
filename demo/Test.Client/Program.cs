@@ -28,7 +28,8 @@ namespace Test.Client
             services.AddLogging()
             //单机版Httpclient配置
             .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047"); })
-            .AddDotNetCoreRpcClient(options => {
+            .AddDotNetCoreRpcClient(options =>
+            {
                 options.Path = "/Test.Server6";
                 options.AddRpcClient<IPersonService>().AddRpcClient<IProductService>();
             });
@@ -37,8 +38,13 @@ namespace Test.Client
             //.AddScoped<NacosDiscoveryDelegatingHandler>()
             //.AddHttpClient(TestServerName, client =>
             //{
-            //    client.BaseAddress = new Uri($"http://{TestServerName}/Test.Server6");
-            //}).AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>();
+            //    client.BaseAddress = new Uri($"http://{TestServerName}");
+            //})
+            //.AddHttpMessageHandler<NacosDiscoveryDelegatingHandler>()
+            //.AddDotNetCoreRpcClient(options => {
+            //    options.Path = "/Test.Server6";
+            //    options.AddRpcClient<IPersonService>().AddRpcClient<IProductService>();
+            //});
 
             using var scope = services.BuildServiceProvider().CreateScope();
             IServiceProvider serviceProvider = scope.ServiceProvider;

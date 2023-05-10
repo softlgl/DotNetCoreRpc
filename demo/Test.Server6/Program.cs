@@ -1,4 +1,7 @@
 using DotNetCoreRpc.Server;
+using Microsoft.Extensions.Configuration;
+using Nacos.AspNetCore.V2;
+using Nacos.V2.Naming.Dtos;
 using Test.DAL;
 using Test.IDAL;
 using Test.IService;
@@ -17,6 +20,8 @@ builder.Services.AddSingleton<IPersonDal, PersonDal>()
                .AddDotNetCoreRpcServer(options => {
                     options.AddFilter<CacheFilter>();
                });
+
+//builder.Services.AddNacosAspNet(builder.Configuration);
 
 var app = builder.Build();
 
