@@ -18,10 +18,12 @@ namespace DotNetCoreRpc.Server
     public class DotNetCoreRpcMiddleware
     {
         private readonly RpcServerOptions _rpcServerOptions;
+        private readonly IServiceProvider _serviceProvider;
 
-        public DotNetCoreRpcMiddleware(RequestDelegate next, RpcServerOptions rpcServerOptions)
+        public DotNetCoreRpcMiddleware(RequestDelegate _, RpcServerOptions rpcServerOptions, IServiceProvider serviceProvider)
         {
             _rpcServerOptions = rpcServerOptions;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -111,7 +113,7 @@ namespace DotNetCoreRpc.Server
                 await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
             });
 
-            List<RpcFilterAttribute> interceptorAttributes = RpcFilterUtils.GetFilterAttributes(aspectContext, _rpcServerOptions.GetFilterTypes());
+            List<RpcFilterAttribute> interceptorAttributes = RpcFilterUtils.GetFilterAttributes(aspectContext, _serviceProvider, _rpcServerOptions.GetFilterTypes());
             if (interceptorAttributes.Any())
             {
                 foreach (var item in interceptorAttributes)

@@ -17,7 +17,7 @@ namespace DotNetCoreRpc.Server.RpcBuilder
         /// 获取方法filters
         /// </summary>
         /// <returns></returns>
-        public static List<RpcFilterAttribute> GetFilterAttributes(RpcContext aspectContext, IEnumerable<Type> filterTypes)
+        public static List<RpcFilterAttribute> GetFilterAttributes(RpcContext aspectContext, IServiceProvider serviceProvider, IEnumerable<Type> filterTypes)
         {
             var methondInfo = aspectContext.Method;
 
@@ -33,13 +33,15 @@ namespace DotNetCoreRpc.Server.RpcBuilder
                     //获取方法filter
                     methondAttributes.AddRange(classAttributes);
                     //获取全局filter
-                    var glableInterceptorAttribute = GetInstances(aspectContext.HttpContext.RequestServices, filterTypes);
+                    var glableInterceptorAttribute = GetInstances(serviceProvider, filterTypes);
                     methondAttributes.AddRange(glableInterceptorAttribute);
+
+                    //filter属性注入
+                    PropertiesInject(aspectContext.HttpContext.RequestServices, methondAttributes);
+
                     return methondAttributes;
                 });
 
-            //filter属性注入
-            PropertiesInject(aspectContext.HttpContext.RequestServices, methondInterceptorAttributes);
             return methondInterceptorAttributes;
         }
 
