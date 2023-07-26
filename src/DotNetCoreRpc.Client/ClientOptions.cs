@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 
@@ -30,13 +31,14 @@ namespace DotNetCoreRpc.Client
 
         public ClientOptions AddRpcClient<T>() where T : class
         {
-            Services.TryAddScoped(provider => AddRpcClient(provider));
+            Services.TryAddScoped(provider => CreateRpcClient(provider));
 
-            T AddRpcClient(IServiceProvider serviceProvider)
+            T CreateRpcClient(IServiceProvider serviceProvider)
             {
                 var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
                 var proxyGenerator = serviceProvider.GetRequiredService<ProxyGenerator>();
                 var httpClient = httpClientFactory.CreateClient(ServiceName);
+
                 RpcClient rpcClient = new RpcClient(this, httpClient, proxyGenerator);
                 return rpcClient.CreateClient<T>();
             }
