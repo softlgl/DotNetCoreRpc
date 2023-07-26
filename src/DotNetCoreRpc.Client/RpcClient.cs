@@ -22,13 +22,12 @@ namespace DotNetCoreRpc.Client
 
         internal T CreateClient<T>() where T : class
         {
-            InitalHttpClient();
+            InitialHttpClient();
 
-            HttpRequestInterceptor httpRequestInterceptor = new HttpRequestInterceptor(_httpClient);
-            return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(httpRequestInterceptor);
+            return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(new HttpRequestInterceptor(_httpClient));
         }
 
-        private void InitalHttpClient()
+        private void InitialHttpClient()
         {
             _httpClient.DefaultRequestHeaders.Add("req-source", "dncrpc");
             if (!string.IsNullOrWhiteSpace(_path))

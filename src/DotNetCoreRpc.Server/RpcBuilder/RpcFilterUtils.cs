@@ -19,15 +19,18 @@ namespace DotNetCoreRpc.Server.RpcBuilder
         /// <returns></returns>
         public static List<RpcFilterAttribute> GetFilterAttributes(RpcContext aspectContext, IServiceProvider serviceProvider, IEnumerable<Type> filterTypes)
         {
-            var methondInfo = aspectContext.Method;
+            var methodInfo = aspectContext.Method;
+            var reflectedTypeHandle = methodInfo.ReflectedType!.TypeHandle.Value;
+            var methodHandle = methodInfo.MethodHandle.Value;
+            var methodKey = $"{reflectedTypeHandle}_{methodHandle}";
 
-            var methondInterceptorAttributes = _methodFilters.GetOrAdd($"{methondInfo.DeclaringType.FullName}#{methondInfo.Name}",
+            var methondInterceptorAttributes = _methodFilters.GetOrAdd(methodKey,
                 key =>
                 {
-                    var methondAttributes = methondInfo.GetCustomAttributes(true)
+                    var methondAttributes = methodInfo.GetCustomAttributes(true)
                                    .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
                                    .Cast<RpcFilterAttribute>().ToList();
-                    var classAttributes = methondInfo.DeclaringType.GetCustomAttributes(true)
+                    var classAttributes = methodInfo.DeclaringType.GetCustomAttributes(true)
                         .Where(i => typeof(RpcFilterAttribute).IsAssignableFrom(i.GetType()))
                         .Cast<RpcFilterAttribute>();
                     //获取方法filter
@@ -68,7 +71,7 @@ namespace DotNetCoreRpc.Server.RpcBuilder
 
         private static void PropertieInject(IServiceProvider serviceProvider, RpcFilterAttribute rpcFilterAttribute)
         {
-            var properties = _filterFromServices.GetOrAdd($"{rpcFilterAttribute.GetType().FullName}", key => rpcFilterAttribute.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(i => i.GetCustomAttribute<FromServicesAttribute>() != null));
+            var properties = _filterFromServices.GetOrAdd($"{rpcFilterAttribute.GetType().TypeHandle.Value}", key => rpcFilterAttribute.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(i => i.GetCustomAttribute<FromServicesAttribute>() != null));
             if (properties.Any())
             {
                 foreach (var propertyInfo in properties)
