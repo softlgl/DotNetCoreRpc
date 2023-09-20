@@ -28,20 +28,13 @@ namespace DotNetCoreRpc.Server
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var requestContent = await context.Request.ReadStringAsync();
-            ResponseModel responseModel = new ResponseModel { Code = (int)HttpStatusCode.InternalServerError };
-            if (string.IsNullOrEmpty(requestContent))
-            {
-                responseModel.Message = "未读取到请求信息";
-                await context.Response.WriteAsync(responseModel.ToJson());
-                return;
-            }
+            context.Request.EnableBuffering();
 
-            RequestModel requestModel = requestContent.FromJson<RequestModel>();
+            RequestModel requestModel = await context.Request.Body.FromStream<RequestModel>();
             if (requestModel == null)
             {
-                responseModel.Message = "读取请求数据失败";
-                await context.Response.WriteAsync(responseModel.ToJson());
+                ResponseModel responseModel = new ResponseModel { Code = (int)HttpStatusCode.InternalServerError, Message = "读取请求数据失败" };
+                await responseModel.WriteToStream(context.Response.Body);
                 return;
             }
 
@@ -110,7 +103,7 @@ namespace DotNetCoreRpc.Server
                     responseModel = returnValue;
                 }
 
-                await aspectContext.HttpContext.Response.WriteAsync(responseModel.ToJson());
+                await responseModel.WriteToStream(rpcContext.HttpContext.Response.Body);
             });
 
             List<RpcFilterAttribute> interceptorAttributes = RpcFilterUtils.GetFilterAttributes(aspectContext, _serviceProvider, _rpcServerOptions.GetFilterTypes());
