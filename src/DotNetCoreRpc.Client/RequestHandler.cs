@@ -105,7 +105,7 @@ namespace DotNetCoreRpc.Client
                 Paramters = arguments
             };
 
-            HttpContent httpContent = new StringContent(requestModel.ToJson());
+            HttpContent httpContent = new ByteArrayContent(requestModel.ToUtf8Bytes());
             httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             string path = string.IsNullOrWhiteSpace(_httpClient.BaseAddress.PathAndQuery) || _httpClient.BaseAddress.PathAndQuery == "/" 
