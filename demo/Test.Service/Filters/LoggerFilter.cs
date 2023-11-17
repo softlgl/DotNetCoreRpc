@@ -13,8 +13,10 @@ namespace Test.Service.Filters
         [FromServices]
         private RedisConfig RedisConfig { get; set; }
 
-        [FromServices]
+#if NET8_0_OR_GREATER
+        [FromServices("elasticSearchConfig")]
         private ElasticSearchConfig ElasticSearchConfig { get; set; }
+#endif
 
         [FromServices]
         private ILogger<CacheFilter> Logger { get; set; }

@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DotNetCoreRpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetCoreRpc.Server.RpcBuilder
@@ -76,7 +75,15 @@ namespace DotNetCoreRpc.Server.RpcBuilder
             {
                 foreach (var propertyInfo in properties)
                 {
-                    propertyInfo.SetValue(rpcFilterAttribute, serviceProvider.GetService(propertyInfo.PropertyType));
+#if NET8_0_OR_GREATER
+                    var serviceAttribute = propertyInfo.GetCustomAttribute<FromServicesAttribute>();
+                    if (!string.IsNullOrWhiteSpace(serviceAttribute.SeviceKey))
+                    {
+                        propertyInfo.SetValue(rpcFilterAttribute, serviceProvider.GetRequiredKeyedService(propertyInfo.PropertyType, serviceAttribute.SeviceKey));
+                        continue;
+                    }
+#endif
+                    propertyInfo.SetValue(rpcFilterAttribute, serviceProvider.GetRequiredService(propertyInfo.PropertyType));
                 }
             }
         }
