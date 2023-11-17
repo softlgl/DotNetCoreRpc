@@ -11,18 +11,23 @@ namespace Test.Service.Filters
 {
     public class CacheFilter : RpcFilterAttribute
     {
-        private readonly ElasticSearchConfig _elasticSearchConfig;
+        //private readonly ElasticSearchConfig _elasticSearchConfig;
 
-        [FromServices]
+        //[FromServices]
         private RedisConfig RedisConfig { get; set; }
+
+#if NET8_0_OR_GREATER
+        [FromServices("elasticSearchConfig")]
+        private ElasticSearchConfig ElasticSearchConfig { get; set; }
+#endif
 
         [FromServices]
         private ILogger<CacheFilter> Logger { get; set; }
 
-        public CacheFilter(ElasticSearchConfig elasticSearchConfig)
-        {
-            _elasticSearchConfig = elasticSearchConfig;
-        }
+        //public CacheFilter(ElasticSearchConfig elasticSearchConfig)
+        //{
+        //    _elasticSearchConfig = elasticSearchConfig;
+        //}
 
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
