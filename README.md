@@ -7,8 +7,8 @@
 <ul>
     <li>visual studio 2022</li>
     <li>.netstandard2.1</li>
-    <li>.net5;.net6;.net7</li>
-    <li>asp.net core 3.1;sp.net core 5.0;asp.net core 6.0;asp.net core 7.0</li>
+    <li>.net5;.net6;.net7;net8</li>
+    <li>asp.net core 3.1;sp.net core 5.0;asp.net core 6.0;asp.net core 7.0;asp.net core 8.0</li>
 </ul>
 
 #### 使用方式
