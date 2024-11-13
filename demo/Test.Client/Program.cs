@@ -50,7 +50,7 @@ namespace Test.Client
             IServiceProvider serviceProvider = scope.ServiceProvider;
             IPersonService personService = serviceProvider.GetService<IPersonService>();
 
-            int maxCount = 10000;
+            //int maxCount = 10000;
 
             //Stopwatch stopwatch = new Stopwatch();
             //Console.WriteLine($"Add开始执行");
@@ -140,7 +140,7 @@ namespace Test.Client
             Console.WriteLine($"最后获取Persons,persons=[{persons.ToJson()}]");
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 await personService.GetPersons();
             }
@@ -150,7 +150,7 @@ namespace Test.Client
             stopwatch.Reset();
             stopwatch.Start();
             List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 tasks.Add(personService.GetPersons());
             }
