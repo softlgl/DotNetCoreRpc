@@ -1,4 +1,5 @@
 using DotNetCoreRpc.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nacos.AspNetCore.V2;
@@ -23,6 +24,16 @@ builder.Services.AddSingleton<IPersonDal, PersonDal>()
                });
 
 //builder.Services.AddNacosAspNet(builder.Configuration);
+
+//添加ttp2和Http3支持
+//builder.WebHost.ConfigureKestrel((context, options) =>
+//{
+//    options.ListenAnyIP(5001, listenOptions =>
+//    {
+//        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+//        listenOptions.UseHttps();
+//    });
+//});
 
 var app = builder.Build();
 

@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Nacos.V2.DependencyInjection;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net;
 
 namespace Test.Client
 {
@@ -27,7 +29,16 @@ namespace Test.Client
             IServiceCollection services = new ServiceCollection();
             services.AddLogging()
             //单机版Httpclient配置
-            .AddHttpClient(TestServerName, client => { client.BaseAddress = new Uri("http://localhost:34047"); })
+            .AddHttpClient(TestServerName, client => 
+            {
+                client.BaseAddress = new Uri("http://localhost:34047");
+
+                //http2.0或3.0
+                //client.BaseAddress = new Uri("https://localhost:5001");
+                //client.DefaultRequestVersion = HttpVersion.Version30;
+                ////client.DefaultRequestVersion = HttpVersion.Version20;
+                //client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            })
             .AddDotNetCoreRpcClient(options =>
             {
                 options.Path = "/Test.Server6";
