@@ -29,7 +29,7 @@ namespace Test.Client
             IServiceCollection services = new ServiceCollection();
             services.AddLogging()
             //单机版Httpclient配置
-            .AddHttpClient(TestServerName, client => 
+            .AddHttpClient(TestServerName, client =>
             {
                 client.BaseAddress = new Uri("http://localhost:34047");
 
@@ -39,8 +39,12 @@ namespace Test.Client
                 ////client.DefaultRequestVersion = HttpVersion.Version20;
                 //client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             })
+            //.AddAsKeyed()
             .AddDotNetCoreRpcClient(options =>
             {
+                //options.Lifetime = ServiceLifetime.Transient;
+                //options.AddAsKeyed = true;
+
                 options.Path = "/Test.Server6";
                 options.AddRpcClient<IPersonService>().AddRpcClient<IProductService>();
             });
