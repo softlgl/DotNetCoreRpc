@@ -39,9 +39,11 @@ namespace Test.Client
                 ////client.DefaultRequestVersion = HttpVersion.Version20;
                 //client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             })
-            //.AddAsKeyed()
+            //.net8 or later
+            //.AddAsKeyed() 
             .AddDotNetCoreRpcClient(options =>
             {
+                //.net8 or later
                 //options.Lifetime = ServiceLifetime.Transient;
                 //options.AddAsKeyed = true;
 
@@ -63,6 +65,8 @@ namespace Test.Client
 
             using var scope = services.BuildServiceProvider().CreateScope();
             IServiceProvider serviceProvider = scope.ServiceProvider;
+            //.net8 or later
+            //IPersonService personService = serviceProvider.GetKeyedService<IPersonService>(TestServerName);
             IPersonService personService = serviceProvider.GetService<IPersonService>();
 
             //int maxCount = 10000;
@@ -173,6 +177,8 @@ namespace Test.Client
             stopwatch.Stop();
             Console.WriteLine($"tasks await:{stopwatch.Elapsed.TotalMilliseconds}");
 
+            //.net8 or later
+            //IProductService productService = serviceProvider.GetKeyedService<IProductService>(TestServerName);
             IProductService productService = serviceProvider.GetService<IProductService>();
             ProductDto product = new ProductDto
             {
