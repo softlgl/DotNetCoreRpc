@@ -403,3 +403,7 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# Local NuGet scratch & packages folder (used for sandboxed restore)
+.nuget-scratch/
+.nuget-packages/

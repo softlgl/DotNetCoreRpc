@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Diagnostics;
+using System.Text.Json;
 using BenchmarkDotNet.Running;
 using DotNetCoreRpc.Client;
 using DotNetCoreRpc.Core;
@@ -20,8 +21,18 @@ namespace Test.Client
         //TestServer服务名称
         const string TestServerName = "TestServer";
 
+        //输出 JSON 时保持汉字原样（不转义为 \uXXXX）
+        static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
         static async Task Main(string[] args)
         {
+            //保证控制台（含重定向/管道）输出为 UTF-8，避免中文乱码
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.InputEncoding = System.Text.Encoding.UTF8;
+
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             var configuration = builder.Build();
@@ -138,7 +149,7 @@ namespace Test.Client
             bool add = await personService.Add(person);
             Console.WriteLine($"添加Person1:{add}");
             person = personService.Get(1);
-            Console.WriteLine($"获取Person,id=1,person=[{person.ToJson()}]");
+            Console.WriteLine($"获取Person,id=1,person=[{JsonSerializer.Serialize(person, JsonOptions)}]");
             person = new PersonModel
             {
                 Id = 2,
@@ -150,13 +161,13 @@ namespace Test.Client
             add = await personService.Add(person);
             Console.WriteLine($"添加Person2:{add}");
             var persons = await personService.GetPersons();
-            Console.WriteLine($"获取Persons,persons=[{persons.ToJson()}]");
+            Console.WriteLine($"获取Persons,persons=[{JsonSerializer.Serialize(persons, JsonOptions)}]");
             await personService.Edit(1);
             Console.WriteLine($"修改Person,id=1完成");
             personService.Delete(1);
             Console.WriteLine($"删除Person,id=1完成");
             persons = await personService.GetPersons();
-            Console.WriteLine($"最后获取Persons,persons=[{persons.ToJson()}]");
+            Console.WriteLine($"最后获取Persons,persons=[{JsonSerializer.Serialize(persons, JsonOptions)}]");
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             for (int i = 0; i < 1000; i++)
@@ -189,7 +200,7 @@ namespace Test.Client
             int productAddResult = await productService.Add(product);
             Console.WriteLine($"添加Product1:{productAddResult==1}");
             product = productService.Get(1000);
-            Console.WriteLine($"获取添加Product1,id=1000,person=[{product.ToJson()}]");
+            Console.WriteLine($"获取添加Product1,id=1000,person=[{JsonSerializer.Serialize(product, JsonOptions)}]");
             product = new ProductDto
             {
                 Id = 2000,
@@ -199,9 +210,9 @@ namespace Test.Client
             productAddResult = await productService.Add(product);
             Console.WriteLine($"添加Product2:{productAddResult == 1}");
             product = productService.Get(2000);
-            Console.WriteLine($"获取添加Product2,id=2000,person=[{product.ToJson()}]");
+            Console.WriteLine($"获取添加Product2,id=2000,person=[{JsonSerializer.Serialize(product, JsonOptions)}]");
             var products = await productService.GetProducts();
-            Console.WriteLine($"products=[{products.ToJson()}]");
+            Console.WriteLine($"products=[{JsonSerializer.Serialize(products, JsonOptions)}]");
             ValueTask editTask = productService.Edit(1);
             await editTask;
             Console.WriteLine($"修改Product,id=1完成");

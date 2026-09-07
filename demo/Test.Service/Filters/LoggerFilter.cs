@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Diagnostics;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
 using DotNetCoreRpc.Server.RpcBuilder;
@@ -10,6 +12,12 @@ namespace Test.Service.Filters
 {
     public class LoggerFilter:RpcFilterAttribute
     {
+        //输出 JSON 时保持汉字原样（不转义为 \uXXXX）
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
         [FromServices]
         private RedisConfig RedisConfig { get; set; }
 
@@ -19,13 +27,13 @@ namespace Test.Service.Filters
 #endif
 
         [FromServices]
-        private ILogger<CacheFilter> Logger { get; set; }
+        private ILogger<LoggerFilter> Logger { get; set; }
 
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
-            Logger.LogInformation($"LoggerFilter begin,Parameters={context.Parameters[0].ToJson()}");
+            Logger.LogInformation("LoggerFilter begin, Parameters={Parameters}", JsonSerializer.Serialize(context.Parameters[0], JsonOptions));
             await next(context);
-            Logger.LogInformation($"LoggerFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+            Logger.LogInformation("LoggerFilter end, ReturnValue={ReturnValue}", JsonSerializer.Serialize(context.ReturnValue, JsonOptions));
         }
     }
 }
