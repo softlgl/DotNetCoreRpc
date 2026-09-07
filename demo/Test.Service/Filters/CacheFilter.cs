@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DotNetCoreRpc.Core;
 using DotNetCoreRpc.Server.RpcBuilder;
@@ -11,6 +13,12 @@ namespace Test.Service.Filters
 {
     public class CacheFilter : RpcFilterAttribute
     {
+        //输出 JSON 时保持汉字原样（不转义为 \uXXXX）
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
         //private readonly ElasticSearchConfig _elasticSearchConfig;
 
         //[FromServices]
@@ -31,9 +39,9 @@ namespace Test.Service.Filters
 
         public override async Task InvokeAsync(RpcContext context, RpcRequestDelegate next)
         {
-            Logger.LogInformation($"CacheFilter begin,Parameters={context.Parameters}");
+            Logger.LogInformation("CacheFilter begin, Parameters={Parameters}", JsonSerializer.Serialize(context.Parameters, JsonOptions));
             await next(context);
-            Logger.LogInformation($"CacheFilter end,ReturnValue={context.ReturnValue.ToJson()}");
+            Logger.LogInformation("CacheFilter end, ReturnValue={ReturnValue}", JsonSerializer.Serialize(context.ReturnValue, JsonOptions));
         }
     }
 }

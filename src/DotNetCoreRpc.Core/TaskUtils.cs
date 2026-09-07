@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -18,6 +18,8 @@ namespace DotNetCoreRpc.Core
         private static readonly ConcurrentDictionary<Type, Func<object, object>> _resultFuncCache = new ConcurrentDictionary<Type, Func<object, object>>();
         private static readonly ConcurrentDictionary<TypeInfo, Func<object, Task>> _valueTaskAsTaskFuncCache = new ConcurrentDictionary<TypeInfo, Func<object, Task>>();
         private static readonly ConcurrentDictionary<MethodInfo, Func<object, object?[]?, object?>> _methodFuncCache = new ConcurrentDictionary<MethodInfo, Func<object, object?[]?, object?>>();
+        private static readonly ConcurrentDictionary<Type, Func<object, Task<object>>> _unwrapTaskCache = new ConcurrentDictionary<Type, Func<object, Task<object>>>();
+        private static readonly ConcurrentDictionary<Type, Func<object, Task<object>>> _unwrapValueTaskCache = new ConcurrentDictionary<Type, Func<object, Task<object>>>();
 
         public static Func<object, object> TaskResultFunc(Type returnType)
         {
@@ -36,10 +38,10 @@ namespace DotNetCoreRpc.Core
         {
             var func = _asValueTaskFuncCache.GetOrAdd(returnType, type =>
             {
-                var vauleType = typeof(ValueTask<>).MakeGenericType(returnType);
+                var valueType = typeof(ValueTask<>).MakeGenericType(returnType);
                 ParameterExpression source = Expression.Parameter(typeof(object), "result");
                 UnaryExpression instanceCast = Expression.Convert(source, returnType);
-                var newExpr = Expression.New(vauleType.GetConstructor(new[] { returnType }), instanceCast);
+                var newExpr = Expression.New(valueType.GetConstructor(new[] { returnType }), instanceCast);
                 var convertBody = Expression.Convert(newExpr, typeof(object));
                 var expr = Expression.Lambda<Func<object, object>>(convertBody, source).Compile();
                 return expr;
@@ -99,9 +101,11 @@ namespace DotNetCoreRpc.Core
                 if (methodCall.Type == typeof(void))
                 {
                     var lambdaAction = Expression.Lambda<Action<object, object?[]?>>(methodCall, targetParameter, parametersParameter);
+                    // 编译一次再复用，避免每次调用都重新编译表达式
+                    var compiledAction = lambdaAction.Compile();
                     return (target, parameters) =>
                     {
-                        lambdaAction.Compile().Invoke(target, parameters);
+                        compiledAction.Invoke(target, parameters);
                         return null;
                     };
                 }
@@ -126,6 +130,71 @@ namespace DotNetCoreRpc.Core
         {
             var methodReturnType = method.ReturnType.GetTypeInfo();
             return methodReturnType.IsAsync();
+        }
+
+        /// <summary>
+        /// 异步解包方法返回值：对 Task&lt;T&gt;/ValueTask&lt;T&gt; 仅 await 一次并返回结果对象，
+        /// 避免同步 .Result 阻塞线程与 ValueTask 二次消费。无返回值的异步方法 await 后返回 null。
+        /// </summary>
+        public static async Task<object> UnwrapAsync(object returnValue, TypeInfo returnValueType)
+        {
+            if (returnValue == null)
+            {
+                return null;
+            }
+
+            if (returnValueType.IsTaskWithResult())
+            {
+                var resultType = returnValueType.GetGenericArguments()[0];
+                var func = _unwrapTaskCache.GetOrAdd(resultType, type =>
+                {
+                    // 表达式直接调用泛型解包方法并编译，缓存后热路径无反射 Invoke 与参数数组分配
+                    var method = typeof(TaskUtils).GetMethod(nameof(AwaitTaskResultImpl), BindingFlags.NonPublic | BindingFlags.Static)!.MakeGenericMethod(type);
+                    ParameterExpression source = Expression.Parameter(typeof(object), "obj");
+                    var callExpr = Expression.Call(method, Expression.Convert(source, typeof(Task<>).MakeGenericType(type)));
+                    var convertBody = Expression.Convert(callExpr, typeof(Task<object>));
+                    return Expression.Lambda<Func<object, Task<object>>>(convertBody, source).Compile();
+                });
+                return await func(returnValue).ConfigureAwait(false);
+            }
+
+            if (returnValueType.IsValueTaskWithResult())
+            {
+                var resultType = returnValueType.GetGenericArguments()[0];
+                var func = _unwrapValueTaskCache.GetOrAdd(resultType, type =>
+                {
+                    var method = typeof(TaskUtils).GetMethod(nameof(AwaitValueTaskResultImpl), BindingFlags.NonPublic | BindingFlags.Static)!.MakeGenericMethod(type);
+                    ParameterExpression source = Expression.Parameter(typeof(object), "obj");
+                    var callExpr = Expression.Call(method, Expression.Convert(source, typeof(ValueTask<>).MakeGenericType(type)));
+                    var convertBody = Expression.Convert(callExpr, typeof(Task<object>));
+                    return Expression.Lambda<Func<object, Task<object>>>(convertBody, source).Compile();
+                });
+                return await func(returnValue).ConfigureAwait(false);
+            }
+
+            if (returnValueType.IsTask() || returnValueType.IsTaskWithVoidTaskResult())
+            {
+                await ((Task)returnValue).ConfigureAwait(false);
+                return null;
+            }
+
+            if (returnValueType.IsValueTask())
+            {
+                await ((ValueTask)returnValue).ConfigureAwait(false);
+                return null;
+            }
+
+            return returnValue;
+        }
+
+        private static async Task<object> AwaitTaskResultImpl<T>(Task<T> task)
+        {
+            return await task.ConfigureAwait(false);
+        }
+
+        private static async Task<object> AwaitValueTaskResultImpl<T>(ValueTask<T> valueTask)
+        {
+            return await valueTask.ConfigureAwait(false);
         }
     }
 }
