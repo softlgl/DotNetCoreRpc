@@ -1,4 +1,5 @@
 using DotNetCoreRpc.Core;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -17,6 +18,11 @@ namespace DotNetCoreRpc.Client
 
         public MessagePackRequestContent(RequestModel requestModel)
         {
+            if (requestModel == null)
+            {
+                throw new ArgumentNullException(nameof(requestModel));
+            }
+
             _requestModel = requestModel;
             Headers.ContentType = new MediaTypeHeaderValue("application/x-msgpack");
         }

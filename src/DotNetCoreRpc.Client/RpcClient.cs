@@ -1,4 +1,4 @@
-﻿using Castle.DynamicProxy;
+using Castle.DynamicProxy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +14,15 @@ namespace DotNetCoreRpc.Client
 
         public RpcClient(HttpClient httpClient, ProxyGenerator proxyGenerator)
         {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException(nameof(httpClient));
+            }
+            if (proxyGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(proxyGenerator));
+            }
+
             _httpClient = httpClient;
             _proxyGenerator = proxyGenerator;
         }

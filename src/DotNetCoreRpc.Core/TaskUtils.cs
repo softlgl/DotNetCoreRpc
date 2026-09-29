@@ -21,8 +21,13 @@ namespace DotNetCoreRpc.Core
         private static readonly ConcurrentDictionary<Type, Func<object, Task<object>>> _unwrapTaskCache = new ConcurrentDictionary<Type, Func<object, Task<object>>>();
         private static readonly ConcurrentDictionary<Type, Func<object, Task<object>>> _unwrapValueTaskCache = new ConcurrentDictionary<Type, Func<object, Task<object>>>();
 
-        public static Func<object, object> TaskResultFunc(Type returnType)
+        public static Func<object, object> TaskFromResultFunc(Type returnType)
         {
+            if (returnType == null)
+            {
+                throw new ArgumentNullException(nameof(returnType));
+            }
+
             var func = _asTaskFuncCache.GetOrAdd(returnType, type => {
                 var resultMethod = typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(returnType);
                 ParameterExpression source = Expression.Parameter(typeof(object), "result");
@@ -34,8 +39,13 @@ namespace DotNetCoreRpc.Core
             return func;
         }
 
-        public static Func<object, object> ValueTaskResultFunc(Type returnType)
+        public static Func<object, object> ValueTaskFromResultFunc(Type returnType)
         {
+            if (returnType == null)
+            {
+                throw new ArgumentNullException(nameof(returnType));
+            }
+
             var func = _asValueTaskFuncCache.GetOrAdd(returnType, type =>
             {
                 var valueType = typeof(ValueTask<>).MakeGenericType(returnType);
@@ -49,11 +59,16 @@ namespace DotNetCoreRpc.Core
             return func;
         }
 
-        public static Func<object, object> CreateFuncToGetTaskResult(Type type)
+        public static Func<object, object> GetTaskResultFunc(Type type)
         {
-            var func = _resultFuncCache.GetOrAdd(type, typeInfo => {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            var func = _resultFuncCache.GetOrAdd(type, taskType => {
                 var parameter = Expression.Parameter(typeof(object), "type");
-                var convertedParameter = Expression.Convert(parameter, typeInfo);
+                var convertedParameter = Expression.Convert(parameter, taskType);
                 var property = Expression.Property(convertedParameter, nameof(Task<int>.Result));
                 var convertedProperty = Expression.Convert(property, typeof(object));
                 var exp = Expression.Lambda<Func<object, object>>(convertedProperty, parameter).Compile();
@@ -64,11 +79,16 @@ namespace DotNetCoreRpc.Core
 
         public static Task ValueTaskWithResultToTask(object value, TypeInfo valueTypeInfo)
         {
-            var func = _valueTaskAsTaskFuncCache.GetOrAdd(valueTypeInfo, k =>
+            if (valueTypeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(valueTypeInfo));
+            }
+
+            var func = _valueTaskAsTaskFuncCache.GetOrAdd(valueTypeInfo, valueType =>
             {
                 var parameter = Expression.Parameter(typeof(object), "type");
-                var convertedParameter = Expression.Convert(parameter, k);
-                var method = k.GetMethod(nameof(ValueTask<int>.AsTask));
+                var convertedParameter = Expression.Convert(parameter, valueType);
+                var method = valueType.GetMethod(nameof(ValueTask<int>.AsTask));
                 var property = Expression.Call(convertedParameter, method);
                 var convertedProperty = Expression.Convert(property, typeof(Task));
                 var exp = Expression.Lambda<Func<object, Task>>(convertedProperty, parameter);
@@ -79,6 +99,11 @@ namespace DotNetCoreRpc.Core
 
         public static Func<object, object?[]?, object?> InvokeMethod(MethodInfo methodInfo)
         {
+            if (methodInfo == null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
             var methodFunc = _methodFuncCache.GetOrAdd(methodInfo, method => 
             {
                 var targetParameter = Expression.Parameter(typeof(object), "target");
@@ -120,6 +145,11 @@ namespace DotNetCoreRpc.Core
 
         public static bool IsAsyncMethod(MethodInfo method)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
             bool isDefAsync = Attribute.IsDefined(method, typeof(AsyncStateMachineAttribute), false);
             bool isTaskType = CheckMethodReturnTypeIsTaskType(method);
             bool isAsync = isDefAsync || isTaskType;
@@ -128,6 +158,11 @@ namespace DotNetCoreRpc.Core
 
         public static bool CheckMethodReturnTypeIsTaskType(MethodInfo method)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
             var methodReturnType = method.ReturnType.GetTypeInfo();
             return methodReturnType.IsAsync();
         }
@@ -141,6 +176,10 @@ namespace DotNetCoreRpc.Core
             if (returnValue == null)
             {
                 return null;
+            }
+            if (returnValueType == null)
+            {
+                throw new ArgumentNullException(nameof(returnValueType));
             }
 
             if (returnValueType.IsTaskWithResult())

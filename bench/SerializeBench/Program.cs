@@ -55,7 +55,7 @@ internal static class Program
         {
             TypeFullName = typeof(BusinessPayload).FullName,
             MethodName = "GetByCondition",
-            Paramters = new object[] { requestArgument }
+            Parameters = new object[] { requestArgument }
         };
 
         // ---- 构造一次典型 RPC 响应载荷（业务对象列表，模拟分页）----
@@ -122,7 +122,7 @@ internal static class Program
     }
 
     // ==========================================================================
-    // 方案C：JSON 源生成（去掉反射分配，但 Data/Paramters 仍是 object）
+    // 方案C：JSON 源生成（去掉反射分配，但 Data/Parameters 仍是 object）
     // ==========================================================================
     internal static class JsonSourceGen
     {

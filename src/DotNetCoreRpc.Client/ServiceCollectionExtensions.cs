@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,6 +9,15 @@ namespace DotNetCoreRpc.Client
     {
         public static IHttpClientBuilder AddDotNetCoreRpcClient(this IHttpClientBuilder httpClientBuilder, Action<ClientOptions> options)
         {
+            if (httpClientBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(httpClientBuilder));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             httpClientBuilder.Services.TryAddSingleton<ProxyGenerator>();
 
             ClientOptions clientOptions = new ClientOptions(httpClientBuilder.Services, httpClientBuilder.Name);

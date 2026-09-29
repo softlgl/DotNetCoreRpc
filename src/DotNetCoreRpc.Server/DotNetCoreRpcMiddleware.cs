@@ -16,7 +16,6 @@ namespace DotNetCoreRpc.Server
     public class DotNetCoreRpcMiddleware
     {
         private readonly RpcServerOptions _rpcServerOptions;
-        private readonly IServiceProvider _serviceProvider;
 
         // 按 (TypeFullName, MethodName) 元组缓存方法元数据与编译好的执行管道，避免每次请求字符串插值分配
         private readonly ConcurrentDictionary<(string TypeFullName, string MethodName), MethodEntry> _methodCache = new ConcurrentDictionary<(string, string), MethodEntry>();
@@ -25,10 +24,9 @@ namespace DotNetCoreRpc.Server
         // 避免每次未找到方法的请求都重新跑反射工厂
         private static readonly MethodEntry MethodNotFound = new MethodEntry();
 
-        public DotNetCoreRpcMiddleware(RequestDelegate _, RpcServerOptions rpcServerOptions, IServiceProvider serviceProvider)
+        public DotNetCoreRpcMiddleware(RequestDelegate _, RpcServerOptions rpcServerOptions)
         {
             _rpcServerOptions = rpcServerOptions;
-            _serviceProvider = serviceProvider;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -59,17 +57,17 @@ namespace DotNetCoreRpc.Server
                     // 仅用于发现方法元数据，实例在管道中按当前作用域重新解析
                     var instance = context.RequestServices.GetRequiredService(serviceType);
                     var instanceType = instance.GetType();
-                    var method = FindMethod(instanceType, requestModel.MethodName, requestModel.Paramters?.Length ?? 0);
+                    var method = FindMethod(instanceType, requestModel.MethodName, requestModel.Parameters?.Length ?? 0);
                     if (method == null)
                     {
                         return MethodNotFound;
                     }
 
                     var aspectContext = new RpcContext { Method = method, TargetType = instanceType, HttpContext = context };
-                    // 全局过滤器模板用根 provider 创建，避免捕获首个请求的 scope（captive dependency）
-                    var filterTemplates = RpcFilterUtils.GetFilterTemplates(aspectContext, _serviceProvider, _rpcServerOptions.GetFilterTypes());
+                    // 标记特性缓存到管道中，实例在管道内按当前请求作用域解析
+                    var methodFilters = RpcFilterUtils.GetFilterAttributes(aspectContext);
                     var invoker = TaskUtils.InvokeMethod(method);
-                    var pipeline = BuildPipeline(serviceType, invoker, filterTemplates);
+                    var pipeline = BuildPipeline(serviceType, invoker, methodFilters, _rpcServerOptions.GetFilterTypes());
 
                     return new MethodEntry
                     {
@@ -90,7 +88,7 @@ namespace DotNetCoreRpc.Server
                 return;
             }
 
-            var parameters = requestModel.Paramters;
+            var parameters = requestModel.Parameters;
             if (parameters == null)
             {
                 parameters = Array.Empty<object>();
@@ -101,7 +99,8 @@ namespace DotNetCoreRpc.Server
                 Parameters = parameters,
                 HttpContext = context,
                 TargetType = methodEntry.Method.DeclaringType,
-                Method = methodEntry.Method
+                Method = methodEntry.Method,
+                ServiceProvider = context.RequestServices
             };
 
             await methodEntry.Pipeline(rpcContext);
@@ -136,14 +135,14 @@ namespace DotNetCoreRpc.Server
         }
 
         /// <summary>
-        /// 构建执行管道（响应包装 -> 过滤器 -> 终结点），过滤器实例在每个请求中按模板新建
+        /// 构建执行管道（响应包装 -> 过滤器 -> 终结点），过滤器实例在每个请求中按当前请求作用域解析
         /// </summary>
-        private RpcRequestDelegate BuildPipeline(Type serviceType, Func<object, object?[]?, object?> invoker, List<RpcFilterAttribute> filterTemplates)
+        private RpcRequestDelegate BuildPipeline(Type serviceType, Func<object, object?[]?, object?> invoker, RpcFilterAttribute[] methodFilters, IEnumerable<Type> globalFilterTypes)
         {
-            AspectPiplineBuilder aspectPipline = new AspectPiplineBuilder();
+            AspectPipelineBuilder pipelineBuilder = new AspectPipelineBuilder();
 
             // 响应包装中间件
-            aspectPipline.Use(async (rpcContext, next) =>
+            pipelineBuilder.Use(async (rpcContext, next) =>
             {
                 try
                 {
@@ -174,26 +173,25 @@ namespace DotNetCoreRpc.Server
                 await rpcContext.HttpContext.Response.Body.WriteToMessagePackStream(responseModel);
             });
 
-            if (filterTemplates != null && filterTemplates.Any())
+            // 层级顺序：全局（注册顺序） -> 类 -> 方法（按 Order 排序）
+            var allFilterTypes = globalFilterTypes.Concat(methodFilters.Select(filter => filter.FilterType));
+            foreach (var filterType in allFilterTypes)
             {
-                foreach (var template in filterTemplates)
+                // 每个请求按当前请求作用域解析/创建独立实例，避免跨请求共享
+                pipelineBuilder.Use((rpcContext, next) =>
                 {
-                    // 捕获不可变的模板，运行时按当前请求作用域创建独立实例，避免跨请求共享
-                    aspectPipline.Use((rpcContext, next) =>
-                    {
-                        var filter = RpcFilterUtils.CreateFilterInstance(rpcContext.HttpContext.RequestServices, template);
-                        return filter.InvokeAsync(rpcContext, next);
-                    });
-                }
+                    var filter = RpcFilterUtils.CreateFilterInstance(rpcContext.HttpContext.RequestServices, filterType);
+                    return filter.InvokeAsync(rpcContext, next);
+                });
             }
 
-            return aspectPipline.Build(PiplineEndPoint(serviceType, invoker));
+            return pipelineBuilder.Build(PipelineEndPoint(serviceType, invoker));
         }
 
         /// <summary>
         /// 管道终结点：按当前请求作用域解析实例并调用方法（使用缓存的编译委托），异步返回值仅 await 一次
         /// </summary>
-        private static RpcRequestDelegate PiplineEndPoint(Type serviceType, Func<object, object?[]?, object?> invoker)
+        private static RpcRequestDelegate PipelineEndPoint(Type serviceType, Func<object, object?[]?, object?> invoker)
         {
             return async rpcContext =>
             {

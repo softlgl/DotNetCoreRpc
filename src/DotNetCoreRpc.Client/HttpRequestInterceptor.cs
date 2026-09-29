@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,6 +15,11 @@ namespace DotNetCoreRpc.Client
         private readonly RequestHandler _requestHandler;
         public HttpRequestInterceptor(HttpClient httpClient)
         {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException(nameof(httpClient));
+            }
+
             _requestHandler = new RequestHandler(httpClient);
         }
 
@@ -57,7 +62,6 @@ namespace DotNetCoreRpc.Client
                 invocation.ReturnValue = _requestHandler.GetValueResultHandleFunc(methodReturnType).Invoke(invocation.Method, invocation.Arguments);
                 return;
             }
-         }
-
+        }
     }
 }

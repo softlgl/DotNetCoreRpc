@@ -8,6 +8,11 @@ namespace DotNetCoreRpc.Server
     {
         public static IApplicationBuilder UseDotNetCoreRpc(this IApplicationBuilder applicationBuilder, string path = default)
         {
+            if (applicationBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(applicationBuilder));
+            }
+
             path = string.IsNullOrWhiteSpace(path) ? "/DotNetCoreRpc/ServerRequest" : path;
             var normalizedPath = path.TrimEnd('/');
             return applicationBuilder.UseWhen(context =>

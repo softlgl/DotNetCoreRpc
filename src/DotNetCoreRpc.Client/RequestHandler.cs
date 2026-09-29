@@ -32,6 +32,11 @@ namespace DotNetCoreRpc.Client
 
         public RequestHandler(HttpClient httpClient)
         {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException(nameof(httpClient));
+            }
+
             _httpClient = httpClient;
             // path 对同一 HttpClient 实例稳定，构造时缓存一次，避免每次请求重复计算
             var pathAndQuery = httpClient.BaseAddress?.PathAndQuery;
@@ -92,6 +97,11 @@ namespace DotNetCoreRpc.Client
             if (result != null && result.Length != 0)
             {
                 ResponseModel responseModel = result.FromMessagePack<ResponseModel>();
+                if (responseModel == null)
+                {
+                    throw new InvalidOperationException("服务端响应无法解析为 ResponseModel");
+                }
+
                 if (responseModel.Code != (int)HttpStatusCode.OK)
                 {
                     throw new Exception($"请求出错,返回内容:{responseModel.Message}");
@@ -116,7 +126,7 @@ namespace DotNetCoreRpc.Client
             {
                 TypeFullName = methodInfo.DeclaringType.FullName,
                 MethodName = methodInfo.Name,
-                Paramters = arguments
+                Parameters = arguments
             };
 
             // 流式序列化的 HttpContent，避免先 ToMessagePackBytes 产生整块中间字节数组

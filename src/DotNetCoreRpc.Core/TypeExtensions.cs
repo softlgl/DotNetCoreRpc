@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
@@ -9,9 +9,9 @@ namespace DotNetCoreRpc.Core
 {
     public static class TypeExtensions
     {
-        private static readonly ConcurrentDictionary<TypeInfo, bool> isTaskOfTCache = new ConcurrentDictionary<TypeInfo, bool>();
-        private static readonly ConcurrentDictionary<TypeInfo, bool> isValueTaskOfTCache = new ConcurrentDictionary<TypeInfo, bool>();
-        private static readonly Type voidTaskResultType = Type.GetType("System.Threading.Tasks.VoidTaskResult", false);
+        private static readonly ConcurrentDictionary<TypeInfo, bool> _isTaskOfTCache = new ConcurrentDictionary<TypeInfo, bool>();
+        private static readonly ConcurrentDictionary<TypeInfo, bool> _isValueTaskOfTCache = new ConcurrentDictionary<TypeInfo, bool>();
+        private static readonly Type _voidTaskResultType = Type.GetType("System.Threading.Tasks.VoidTaskResult", false);
 
         public static bool IsTask(this TypeInfo typeInfo)
         {
@@ -28,7 +28,7 @@ namespace DotNetCoreRpc.Core
             {
                 throw new ArgumentNullException(nameof(typeInfo));
             }
-            return isTaskOfTCache.GetOrAdd(typeInfo, Info => Info.IsGenericType && typeof(Task).GetTypeInfo().IsAssignableFrom(Info));
+            return _isTaskOfTCache.GetOrAdd(typeInfo, key => key.IsGenericType && typeof(Task).GetTypeInfo().IsAssignableFrom(key));
         }
 
         public static bool IsTaskWithVoidTaskResult(this TypeInfo typeInfo)
@@ -38,7 +38,7 @@ namespace DotNetCoreRpc.Core
                 throw new ArgumentNullException(nameof(typeInfo));
             }
 
-            return typeInfo.GenericTypeArguments?.Length > 0 && typeInfo.GenericTypeArguments[0] == voidTaskResultType;
+            return typeInfo.GenericTypeArguments?.Length > 0 && typeInfo.GenericTypeArguments[0] == _voidTaskResultType;
         }
 
         public static bool IsValueTask(this TypeInfo typeInfo)
@@ -56,7 +56,7 @@ namespace DotNetCoreRpc.Core
             {
                 throw new ArgumentNullException(nameof(typeInfo));
             }
-            return isValueTaskOfTCache.GetOrAdd(typeInfo, Info => Info.IsGenericType && Info.GetGenericTypeDefinition() == typeof(ValueTask<>));
+            return _isValueTaskOfTCache.GetOrAdd(typeInfo, key => key.IsGenericType && key.GetGenericTypeDefinition() == typeof(ValueTask<>));
         }
 
         public static bool IsAsync(this TypeInfo typeInfo)

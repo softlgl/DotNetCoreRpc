@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DotNetCoreRpc.Server.RpcBuilder;
 using Test.IDAL;
 using Test.IService;
 using Test.Model;
@@ -16,7 +17,7 @@ namespace Test.Service
             _personDal = personDal;
         }
 
-        [LoggerFilter]
+        [RpcFilter(typeof(LoggerFilter))]
         public ValueTask<bool> Add(PersonModel person)
         {
             return new ValueTask<bool>(_personDal.Add(person));
@@ -32,7 +33,7 @@ namespace Test.Service
             return Task.CompletedTask;
         }
 
-        [LoggerFilter]
+        [RpcFilter(typeof(LoggerFilter))]
         public PersonModel Get(int id)
         {
             return _personDal.Get(id);

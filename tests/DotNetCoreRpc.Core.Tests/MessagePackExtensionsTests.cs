@@ -23,7 +23,7 @@ namespace DotNetCoreRpc.Core.Tests
             {
                 TypeFullName = typeof(BusinessDto).FullName,
                 MethodName = "GetByCondition",
-                Paramters = new object[] { new BusinessDto { Id = 42, Name = "中文" } }
+                Parameters = new object[] { new BusinessDto { Id = 42, Name = "中文" } }
             };
 
             var bytes = request.ToMessagePackBytes();
@@ -31,8 +31,8 @@ namespace DotNetCoreRpc.Core.Tests
 
             Assert.Equal(request.TypeFullName, back.TypeFullName);
             Assert.Equal(request.MethodName, back.MethodName);
-            Assert.IsType<BusinessDto>(back.Paramters[0]);
-            Assert.Equal(42, ((BusinessDto)back.Paramters[0]).Id);
+            Assert.IsType<BusinessDto>(back.Parameters[0]);
+            Assert.Equal(42, ((BusinessDto)back.Parameters[0]).Id);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace DotNetCoreRpc.Core.Tests
             {
                 TypeFullName = typeof(BusinessDto).FullName,
                 MethodName = "Add",
-                Paramters = new object[] { new BusinessDto { Id = 5 } }
+                Parameters = new object[] { new BusinessDto { Id = 5 } }
             };
 
             using var ms = new MemoryStream();
@@ -70,7 +70,7 @@ namespace DotNetCoreRpc.Core.Tests
 
             var back = await ms.FromMessagePackStream<RequestModel>();
             Assert.Equal(request.MethodName, back.MethodName);
-            Assert.Equal(5, ((BusinessDto)back.Paramters[0]).Id);
+            Assert.Equal(5, ((BusinessDto)back.Parameters[0]).Id);
         }
 
         [Fact]

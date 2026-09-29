@@ -1,4 +1,4 @@
-﻿using Castle.DynamicProxy;
+using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
@@ -33,8 +33,8 @@ namespace DotNetCoreRpc.Client
 
         public ClientOptions(IServiceCollection services, string serviceName)
         {
-            Services = services;
-            ServiceName = serviceName;
+            Services = services ?? throw new ArgumentNullException(nameof(services));
+            ServiceName = serviceName ?? throw new ArgumentNullException(nameof(serviceName));
         }
 
         public ClientOptions AddRpcClient<T>(ServiceLifetime? lifetime = null) where T : class
@@ -64,4 +64,4 @@ namespace DotNetCoreRpc.Client
             return this;
         }
     }
- }
+}
